@@ -7,7 +7,6 @@ class Router {
     this.params = {};
     
     window.addEventListener('hashchange', () => this.handleRoute());
-    window.addEventListener('load', () => this.handleRoute());
   }
   
   // Register a route
