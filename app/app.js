@@ -580,8 +580,8 @@ function wireDashboardActions(){
   // Wire clickable task cards
   document.querySelectorAll('[data-task-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      // Don't trigger if clicking a button
-      if(e.target.tagName === 'BUTTON') return;
+      // Don't trigger if clicking a button or its children
+      if(e.target.closest('button')) return;
       const taskId = card.getAttribute('data-task-id');
       openTaskDetailModal(taskId);
     });
@@ -621,8 +621,8 @@ function wireContractActions(){
   // Wire clickable contract cards
   document.querySelectorAll('[data-contract-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      // Don't trigger if clicking a button
-      if(e.target.tagName === 'BUTTON') return;
+      // Don't trigger if clicking a button or its children
+      if(e.target.closest('button')) return;
       const contractId = card.getAttribute('data-contract-id');
       openContractDetailModal(contractId);
     });
@@ -658,8 +658,8 @@ function wireTaskActions(){
   // Wire clickable task cards
   document.querySelectorAll('[data-task-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      // Don't trigger if clicking a button
-      if(e.target.tagName === 'BUTTON') return;
+      // Don't trigger if clicking a button or its children
+      if(e.target.closest('button')) return;
       const taskId = card.getAttribute('data-task-id');
       openTaskDetailModal(taskId);
     });
@@ -719,8 +719,8 @@ function wireForumActions(){
   // Wire clickable thread cards
   document.querySelectorAll('[data-thread-id]').forEach(card => {
     card.addEventListener('click', (e) => {
-      // Don't trigger if clicking a button
-      if(e.target.tagName === 'BUTTON') return;
+      // Don't trigger if clicking a button or its children
+      if(e.target.closest('button')) return;
       const threadId = card.getAttribute('data-thread-id');
       openForumThreadDetailModal(threadId);
     });
