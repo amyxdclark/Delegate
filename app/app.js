@@ -206,8 +206,17 @@ function wireTimerButtons(){
   
   if(btnStart){
     btnStart.addEventListener("click", () => {
+      // Get selected task if available
+      const taskSelect = el("timerTaskSelect");
+      const taskNodeId = taskSelect ? taskSelect.value : null;
+      
+      if(taskSelect && !taskNodeId){
+        alert("Please select a task to track time for");
+        return;
+      }
+      
       // Start a new work session
-      state = startWorkSession(state, currentUser.userId, currentUser.tenantId, null);
+      state = startWorkSession(state, currentUser.userId, currentUser.tenantId, taskNodeId);
       persist();
       renderCurrentView();
       startTimerUpdate();
@@ -533,7 +542,74 @@ function openCreateTimeEntryModal(){
 
 // Stub functions for wiring various views - placeholders for future implementation
 function wireTasks(){
-  // TODO: Wire up task editing, status transitions, hierarchy display
+  // Wire up drag-and-drop for Kanban board
+  const taskCards = document.querySelectorAll('.task-card');
+  const columns = document.querySelectorAll('.kanban-column');
+  
+  let draggedElement = null;
+  
+  taskCards.forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      draggedElement = e.target;
+      e.target.classList.add('opacity-50');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', e.target.innerHTML);
+    });
+    
+    card.addEventListener('dragend', (e) => {
+      e.target.classList.remove('opacity-50');
+      // Remove all drag-over visual feedback
+      columns.forEach(col => {
+        col.classList.remove('bg-cyan-900/20', 'border-cyan-600');
+      });
+    });
+  });
+  
+  columns.forEach(column => {
+    column.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      column.classList.add('bg-cyan-900/20');
+    });
+    
+    column.addEventListener('dragleave', (e) => {
+      column.classList.remove('bg-cyan-900/20');
+    });
+    
+    column.addEventListener('drop', (e) => {
+      e.preventDefault();
+      column.classList.remove('bg-cyan-900/20');
+      
+      if(!draggedElement) return;
+      
+      const taskId = draggedElement.getAttribute('data-task-id');
+      const newStatus = column.getAttribute('data-status');
+      
+      // Update task status in state
+      const task = state.taskNodes.find(t => t.TaskNodeId === taskId);
+      if(task && task.Status !== newStatus){
+        task.Status = newStatus;
+        
+        // Add workflow history entry
+        const historyEntry = {
+          HistoryId: uid('WFH'),
+          TenantId: currentUser.tenantId,
+          TaskNodeId: taskId,
+          FromStepId: null,
+          ToStepId: null,
+          TransitionedByUserId: currentUser.userId,
+          TransitionedUtc: new Date().toISOString(),
+          Notes: `Status changed to ${newStatus}`
+        };
+        addToCollection(state.taskWorkflowHistory, historyEntry);
+        
+        persist();
+        renderCurrentView();
+      }
+      
+      draggedElement = null;
+    });
+  });
 }
 
 // Wire dashboard interactive features
@@ -796,11 +872,273 @@ function switchChatThread(threadId){
 }
 
 function wireCalendarActions(){
-  // TODO: Wire up meeting creation, deadline reminders
+  // Wire create meeting button
+  const btnCreateMeeting = el("btnCreateMeeting");
+  if(btnCreateMeeting){
+    btnCreateMeeting.addEventListener("click", () => openCreateMeetingModal());
+  }
+  
+  // Wire create deadline button
+  const btnCreateDeadline = el("btnCreateDeadline");
+  if(btnCreateDeadline){
+    btnCreateDeadline.addEventListener("click", () => openCreateDeadlineModal());
+  }
+}
+
+function openCreateMeetingModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Meeting Title *</div>
+        <input type="text" id="meetingTitle" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter meeting title" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Date & Time *</div>
+        <input type="datetime-local" id="meetingDateTime" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Duration (minutes)</div>
+        <input type="number" id="meetingDuration" value="60" min="15" step="15" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Location</div>
+        <input type="text" id="meetingLocation" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="e.g., Conference Room A or Zoom link" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="meetingDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Meeting agenda..."></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveMeeting" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Meeting</button>
+  `;
+  setModal(modal("Create New Meeting", body, footer));
+  
+  el("btnSaveMeeting").addEventListener("click", () => {
+    const title = el("meetingTitle").value.trim();
+    const dateTime = el("meetingDateTime").value;
+    const duration = parseInt(el("meetingDuration").value) || 60;
+    const location = el("meetingLocation").value.trim();
+    const description = el("meetingDescription").value.trim();
+    
+    if(!title || !dateTime){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const startUtc = new Date(dateTime).toISOString();
+    const endUtc = new Date(new Date(dateTime).getTime() + duration * 60000).toISOString();
+    
+    const meeting = {
+      MeetingId: uid('MEET'),
+      TenantId: currentUser.tenantId,
+      Title: title,
+      Description: description,
+      Location: location,
+      StartUtc: startUtc,
+      EndUtc: endUtc,
+      Organizer: currentUser.userId,
+      Status: 'Scheduled',
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.meetings, meeting);
+    
+    // Add organizer as attendee
+    const attendee = {
+      AttendeeId: uid('ATT'),
+      TenantId: currentUser.tenantId,
+      MeetingId: meeting.MeetingId,
+      UserId: currentUser.userId,
+      ResponseStatus: 'Accepted',
+      CreatedUtc: new Date().toISOString()
+    };
+    addToCollection(state.meetingAttendees, attendee);
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function openCreateDeadlineModal(){
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const tasks = (state.taskNodes || []).filter(tn => assignedTaskIds.includes(tn.TaskNodeId));
+  const contracts = (state.contracts || []).filter(c => c.TenantId === currentUser.tenantId);
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Deadline Title *</div>
+        <input type="text" id="deadlineTitle" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter deadline title" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Due Date & Time *</div>
+        <input type="datetime-local" id="deadlineDateTime" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Related Task (Optional)</div>
+        <select id="deadlineTask" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="">None</option>
+          ${tasks.map(t => `
+            <option value="${t.TaskNodeId}">${escapeHtml(t.Title)}</option>
+          `).join('')}
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Related Contract (Optional)</div>
+        <select id="deadlineContract" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="">None</option>
+          ${contracts.map(c => `
+            <option value="${c.ContractId}">${escapeHtml(c.Name)}</option>
+          `).join('')}
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="deadlineDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Deadline details..."></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveDeadline" class="px-3 py-2 rounded-xl bg-amber-700 hover:bg-amber-600">Create Deadline</button>
+  `;
+  setModal(modal("Create New Deadline", body, footer));
+  
+  el("btnSaveDeadline").addEventListener("click", () => {
+    const title = el("deadlineTitle").value.trim();
+    const dateTime = el("deadlineDateTime").value;
+    const taskId = el("deadlineTask").value || null;
+    const contractId = el("deadlineContract").value || null;
+    const description = el("deadlineDescription").value.trim();
+    
+    if(!title || !dateTime){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const deadline = {
+      DeadlineId: uid('DL'),
+      TenantId: currentUser.tenantId,
+      TaskNodeId: taskId,
+      ContractId: contractId,
+      Title: title,
+      Description: description,
+      DeadlineUtc: new Date(dateTime).toISOString(),
+      Status: 'Pending',
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.deadlines, deadline);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
 }
 
 function wireProfileActions(){
-  // TODO: Add skill editing, profile updates
+  // Wire manage skills button
+  const btnManageSkills = el("btnManageSkills");
+  if(btnManageSkills){
+    btnManageSkills.addEventListener("click", () => openAddSkillModal());
+  }
+  
+  // Wire remove skill buttons
+  document.querySelectorAll('[data-remove-skill]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const skillId = e.target.getAttribute('data-remove-skill');
+      if(confirm('Remove this skill from your profile?')){
+        // Find and remove the user skill
+        const userSkillIdx = state.userSkills.findIndex(us => 
+          us.UserId === currentUser.userId && 
+          us.SkillId === skillId && 
+          us.TenantId === currentUser.tenantId
+        );
+        if(userSkillIdx >= 0){
+          state.userSkills.splice(userSkillIdx, 1);
+          persist();
+          renderCurrentView();
+        }
+      }
+    });
+  });
+}
+
+function openAddSkillModal(){
+  // Get all available skills that user doesn't already have
+  const userSkillIds = (state.userSkills || [])
+    .filter(us => us.UserId === currentUser.userId && us.TenantId === currentUser.tenantId)
+    .map(us => us.SkillId);
+  const availableSkills = (state.skills || []).filter(s => !userSkillIds.includes(s.SkillId));
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Skill *</div>
+        <select id="skillSelect" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="">Select a skill...</option>
+          ${availableSkills.map(s => `
+            <option value="${s.SkillId}">${escapeHtml(s.Name)} - ${escapeHtml(s.Category)}</option>
+          `).join('')}
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Proficiency Level *</div>
+        <select id="proficiencySelect" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Expert">Expert</option>
+        </select>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveSkill" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Add Skill</button>
+  `;
+  setModal(modal("Add Skill", body, footer));
+  
+  el("btnSaveSkill").addEventListener("click", () => {
+    const skillId = el("skillSelect").value;
+    const proficiency = el("proficiencySelect").value;
+    
+    if(!skillId){
+      alert("Please select a skill");
+      return;
+    }
+    
+    const userSkill = {
+      UserSkillId: uid('US'),
+      TenantId: currentUser.tenantId,
+      UserId: currentUser.userId,
+      SkillId: skillId,
+      ProficiencyLevel: proficiency,
+      YearsExperience: null,
+      LastUsedDate: new Date().toISOString(),
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.userSkills, userSkill);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
 }
 
 function wirePTOActions(){
