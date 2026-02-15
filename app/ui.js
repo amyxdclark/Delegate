@@ -95,6 +95,7 @@ export function appShell(state, currentUser, currentView){
             ${hasCalendar ? navTab('calendar', '📅 Calendar', currentView) : ''}
             ${hasReporting ? navTab('reports', '📊 Reports', currentView) : ''}
             ${hasAI ? navTab('ai', '🤖 AI Assistant', currentView) : ''}
+            ${navTab('pto', '🏖️ PTO', currentView)}
           </div>
         </nav>
       </header>
@@ -1044,6 +1045,128 @@ export function renderAIAssistant(state, currentUser){
             `).join('')}
           </div>
         `}
+      </div>
+    </div>
+  `;
+}
+
+// PTO / Leave Management
+export function renderPTO(state, currentUser){
+  const ptoEntries = (state.ptoEntries || []).filter(p => 
+    p.TenantId === currentUser.tenantId
+  ).sort((a, b) => new Date(b.CreatedUtc) - new Date(a.CreatedUtc));
+  
+  const myEntries = ptoEntries.filter(p => p.UserId === currentUser.userId);
+  const pendingApprovals = ptoEntries.filter(p => p.Status === 'Submitted');
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">PTO / Leave Management</h1>
+        <button id="btnCreatePTO" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold">
+          + Request PTO
+        </button>
+      </div>
+      
+      <!-- My PTO Requests -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">My PTO Requests</h2>
+        ${myEntries.length === 0 ? '<div class="text-slate-400">No PTO requests</div>' : ''}
+        <div class="space-y-2">
+          ${myEntries.map(p => `
+            <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium">${escapeHtml(p.Category)} - ${escapeHtml(p.Type)}</div>
+                <div class="text-sm text-slate-400">${fmtDate(p.StartUtc)} to ${fmtDate(p.EndUtc)} (${p.Hours}h)</div>
+                ${p.Notes ? `<div class="text-sm text-slate-400 mt-1">${escapeHtml(p.Notes)}</div>` : ''}
+              </div>
+              <span class="px-3 py-1 rounded-lg text-sm ${
+                p.Status === 'Approved' ? 'bg-emerald-900 text-emerald-300' :
+                p.Status === 'Submitted' ? 'bg-amber-900 text-amber-300' :
+                'bg-slate-700 text-slate-300'
+              }">${escapeHtml(p.Status)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Pending Approvals (for approvers) -->
+      ${pendingApprovals.length > 0 ? `
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+          <h2 class="text-xl font-semibold mb-4">Pending Approvals</h2>
+          <div class="space-y-2">
+            ${pendingApprovals.map(p => {
+              const user = (state.users || []).find(u => u.UserId === p.UserId);
+              return `
+                <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800">
+                  <div class="flex-1">
+                    <div class="font-medium">${escapeHtml(user?.DisplayName || 'Unknown User')}</div>
+                    <div class="text-sm text-slate-400">${escapeHtml(p.Category)} - ${fmtDate(p.StartUtc)} to ${fmtDate(p.EndUtc)} (${p.Hours}h)</div>
+                    ${p.Notes ? `<div class="text-sm text-slate-400 mt-1">${escapeHtml(p.Notes)}</div>` : ''}
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="px-3 py-1 text-sm rounded-lg bg-emerald-700 hover:bg-emerald-600" data-approve-pto="${p.PtoEntryId}">Approve</button>
+                    <button class="px-3 py-1 text-sm rounded-lg bg-rose-700 hover:bg-rose-600" data-deny-pto="${p.PtoEntryId}">Deny</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Audit Log Viewer
+export function renderAuditLog(state, currentUser){
+  const auditLogs = (state.auditLogs || [])
+    .filter(log => log.TenantId === currentUser.tenantId)
+    .sort((a, b) => new Date(b.TimestampUtc) - new Date(a.TimestampUtc))
+    .slice(0, 100);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Audit Log</h1>
+        <div class="text-sm text-slate-400">Last 100 entries</div>
+      </div>
+      
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-900/40 border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Timestamp</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">User</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Action</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Entity</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${auditLogs.map(log => {
+                const user = (state.users || []).find(u => u.UserId === log.UserId);
+                return `
+                  <tr class="border-b border-slate-800/50 hover:bg-slate-900/30">
+                    <td class="px-4 py-3 text-xs">${fmtDateTime(log.TimestampUtc)}</td>
+                    <td class="px-4 py-3">${escapeHtml(user?.DisplayName || 'Unknown')}</td>
+                    <td class="px-4 py-3">
+                      <span class="px-2 py-1 rounded-lg text-xs bg-slate-700">${escapeHtml(log.Action)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-400">${escapeHtml(log.EntityType)}</td>
+                    <td class="px-4 py-3 text-slate-400 text-xs">${escapeHtml(clampText(log.Details || '', 60))}</td>
+                  </tr>
+                `;
+              }).join('')}
+              ${auditLogs.length === 0 ? `
+                <tr>
+                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">No audit logs</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `;

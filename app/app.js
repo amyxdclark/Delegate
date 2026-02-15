@@ -1,4 +1,4 @@
-import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar, renderUserProfile, renderReports, renderAIAssistant } from "./ui.js";
+import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar, renderUserProfile, renderReports, renderAIAssistant, renderPTO, renderAuditLog } from "./ui.js";
 import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession, resumeWorkSession, markNotificationRead, isFeatureEnabled, getUserRoles, isAdmin, isProjectManager, isApprover, getTenantBranding, transitionTimeEntry, addToCollection } from "./state.js";
 import { downloadJson, readJsonFile, uid } from "./utils.js";
 
@@ -553,13 +553,110 @@ function wireForumActions(){}
 function wireChatActions(){}
 function wireCalendarActions(){}
 function wireProfileActions(){}
-function wirePTOActions(){}
 
-// PTO and Audit Log views - will implement in ui.js
-function renderPTO(state, currentUser){
-  return '<div class="p-4 text-center text-slate-400">PTO view - Coming soon</div>';
+function wirePTOActions(){
+  // Wire create PTO button
+  const btnCreate = el("btnCreatePTO");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreatePTOModal());
+  }
+  
+  // Wire approve/deny buttons
+  document.querySelectorAll('[data-approve-pto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const ptoId = e.target.getAttribute('data-approve-pto');
+      approvePTO(ptoId);
+    });
+  });
+  
+  document.querySelectorAll('[data-deny-pto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const ptoId = e.target.getAttribute('data-deny-pto');
+      denyPTO(ptoId);
+    });
+  });
 }
 
-function renderAuditLog(state, currentUser){
-  return '<div class="p-4 text-center text-slate-400">Audit Log view - Coming soon</div>';
+// PTO helpers
+function openCreatePTOModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Category</div>
+        <select id="ptoCategory" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700">
+          <option>Vacation</option>
+          <option>Sick</option>
+          <option>Training</option>
+          <option>Personal</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Start Date</div>
+        <input type="date" id="ptoStartDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">End Date</div>
+        <input type="date" id="ptoEndDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Hours</div>
+        <input type="number" id="ptoHours" min="1" max="200" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" value="8" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Notes</div>
+        <textarea id="ptoNotes" rows="2" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700"></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSavePTO" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Submit Request</button>
+  `;
+  setModal(modal("Request PTO", body, footer));
+  
+  el("btnSavePTO").addEventListener("click", () => {
+    const ptoEntry = {
+      PtoEntryId: uid('PTO'),
+      TenantId: currentUser.tenantId,
+      UserId: currentUser.userId,
+      Type: 'Planned',
+      Category: el("ptoCategory").value,
+      StartUtc: el("ptoStartDate").value + 'T00:00:00Z',
+      EndUtc: el("ptoEndDate").value + 'T23:59:59Z',
+      Hours: parseInt(el("ptoHours").value),
+      Status: 'Submitted',
+      Notes: el("ptoNotes").value,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.ptoEntries, ptoEntry);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
 }
+
+function approvePTO(ptoId){
+  const pto = state.ptoEntries.find(p => p.PtoEntryId === ptoId);
+  if(pto){
+    pto.Status = 'Approved';
+    pto.ApprovedByUserId = currentUser.userId;
+    pto.ApprovedUtc = new Date().toISOString();
+    persist();
+    renderCurrentView();
+  }
+}
+
+function denyPTO(ptoId){
+  const pto = state.ptoEntries.find(p => p.PtoEntryId === ptoId);
+  if(pto){
+    pto.Status = 'Denied';
+    persist();
+    renderCurrentView();
+  }
+}
+
