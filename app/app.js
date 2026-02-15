@@ -553,14 +553,14 @@ function wireTasks(){
       draggedElement = e.target;
       e.target.classList.add('opacity-50');
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/html', e.target.innerHTML);
+      e.dataTransfer.setData('text/plain', e.target.getAttribute('data-task-id'));
     });
     
     card.addEventListener('dragend', (e) => {
       e.target.classList.remove('opacity-50');
       // Remove all drag-over visual feedback
       columns.forEach(col => {
-        col.classList.remove('bg-cyan-900/20', 'border-cyan-600');
+        col.classList.remove('bg-cyan-900/20');
       });
     });
   });
