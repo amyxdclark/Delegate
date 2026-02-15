@@ -443,6 +443,7 @@ function openNotificationsPanel(){
   document.querySelectorAll('[data-mark-read]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const notifId = e.target.getAttribute('data-mark-read');
+      // Note: markNotificationRead mutates state in place
       markNotificationRead(state, notifId);
       persist();
       setModal(""); // Close modal
@@ -519,6 +520,7 @@ function openCreateTimeEntryModal(){
       CreatedUtc: new Date().toISOString()
     };
     
+    // Note: addToCollection mutates state in place
     addToCollection(state.timeEntries, timeEntry);
     persist();
     setModal("");
@@ -526,8 +528,10 @@ function openCreateTimeEntryModal(){
   });
 }
 
-// Stub functions for wiring various views - will implement progressively
-function wireTasks(){}
+// Stub functions for wiring various views - placeholders for future implementation
+function wireTasks(){
+  // TODO: Wire up task editing, status transitions, hierarchy display
+}
 
 function wireTimesheetActions(){
   // Wire create time entry button
@@ -541,6 +545,7 @@ function wireTimesheetActions(){
     btn.addEventListener('click', (e) => {
       const entryId = e.target.getAttribute('data-submit-entry');
       if(confirm('Submit this time entry for approval?')){
+        // Note: transitionTimeEntry mutates state in place
         transitionTimeEntry(state, entryId, 'Pending', currentUser.userId);
         persist();
         renderCurrentView();
@@ -549,7 +554,9 @@ function wireTimesheetActions(){
   });
 }
 
-function wireForumActions(){}
+function wireForumActions(){
+  // TODO: Wire up forum thread/post creation, attachments, badges
+}
 
 function wireChatActions(){
   // Wire send message button
@@ -595,6 +602,7 @@ function sendChatMessage(){
     SentUtc: new Date().toISOString()
   };
   
+  // Note: addToCollection mutates state in place
   addToCollection(state.chatMessages, message);
   
   // Update thread's last message time
@@ -614,17 +622,17 @@ function switchChatThread(threadId){
   const thread = state.chatThreads.find(t => t.ThreadId === threadId);
   if(!thread) return;
   
-  // Re-render just the messages container
-  const container = el("chatMessagesContainer");
-  if(container){
-    // Import renderChatMessages - we need to expose it or inline it here
-    // For now, just re-render the whole view
-    renderCurrentView();
-  }
+  // Re-render the whole view to show the selected thread
+  renderCurrentView();
 }
 
-function wireCalendarActions(){}
-function wireProfileActions(){}
+function wireCalendarActions(){
+  // TODO: Wire up meeting creation, deadline reminders
+}
+
+function wireProfileActions(){
+  // TODO: Add skill editing, profile updates
+}
 
 function wirePTOActions(){
   // Wire create PTO button
@@ -705,6 +713,7 @@ function openCreatePTOModal(){
       CreatedUtc: new Date().toISOString()
     };
     
+    // Note: addToCollection mutates state in place
     addToCollection(state.ptoEntries, ptoEntry);
     persist();
     setModal("");

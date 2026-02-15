@@ -600,9 +600,6 @@ export function renderChat(state, currentUser){
   const chatThreads = (state.chatThreads || []).filter(t => t.TenantId === currentUser.tenantId)
     .sort((a, b) => new Date(b.LastMessageUtc) - new Date(a.LastMessageUtc));
   
-  // Store selected thread in a global for now (could use URL param or state)
-  const selectedThreadId = chatThreads[0]?.ThreadId;
-  
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
       <div class="mb-6">
@@ -618,7 +615,7 @@ export function renderChat(state, currentUser){
           </div>
           <div class="divide-y divide-slate-800/50 max-h-[600px] overflow-y-auto">
             ${chatThreads.map((thread, idx) => `
-              <button class="w-full text-left p-4 hover:bg-slate-900/40 ${idx === 0 ? 'bg-slate-900/40' : ''}" data-chat-thread="${thread.ThreadId}">
+              <button class="w-full text-left p-4 hover:bg-slate-900/40 ${idx === 0 ? 'bg-slate-900/40' : ''}" data-chat-thread="${thread.ThreadId}" aria-label="Select conversation: ${escapeHtml(thread.Title)}">
                 <div class="font-medium text-sm mb-1">${escapeHtml(thread.Title)}</div>
                 <div class="text-xs text-slate-400">${fmtDateTime(thread.LastMessageUtc)}</div>
               </button>
