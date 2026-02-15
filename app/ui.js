@@ -393,9 +393,11 @@ export function renderTasks(state, currentUser){
               <div class="font-semibold">${status.replace(/([A-Z])/g, ' $1').trim()}</div>
               <div class="px-2 py-1 rounded-lg text-xs ${statusColor(status)}">${statusTasks.length}</div>
             </div>
-            <div class="p-3 space-y-2 max-h-[600px] overflow-y-auto">
+            <div class="p-3 space-y-2 max-h-[600px] overflow-y-auto kanban-column" data-status="${status}">
               ${statusTasks.map(t => `
-                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition cursor-pointer group" data-task-id="${t.TaskNodeId}">
+                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition cursor-move group task-card" 
+                     data-task-id="${t.TaskNodeId}" 
+                     draggable="true">
                   <div class="font-medium text-sm mb-1">${escapeHtml(t.Title)}</div>
                   <div class="text-xs text-slate-400 mb-2">${escapeHtml(clampText(t.Description || '', 60))}</div>
                   ${t.ScopedHours ? `
@@ -453,11 +455,14 @@ export function renderTimesheet(state, currentUser){
       </div>
       
       <!-- Active Timer -->
-      ${activeSession ? `
+      ${activeSession ? (() => {
+        const timerTask = activeSession.TaskNodeId ? 
+          (state.taskNodes || []).find(t => t.TaskNodeId === activeSession.TaskNodeId) : null;
+        return `
         <div class="mb-6 p-6 rounded-2xl border-2 border-cyan-600 bg-cyan-950/20">
           <div class="flex items-center justify-between gap-4">
             <div class="flex-1">
-              <div class="text-sm text-slate-400 mb-1">Active Timer</div>
+              <div class="text-sm text-slate-400 mb-1">Active Timer${timerTask ? ` - ${escapeHtml(timerTask.Title)}` : ''}</div>
               <div class="text-2xl font-bold mb-1" id="timerDisplay">00:00:00</div>
               <div class="text-sm text-slate-400">Started: ${fmtDateTime(activeSession.StartedUtc)}</div>
             </div>
@@ -471,7 +476,8 @@ export function renderTimesheet(state, currentUser){
             </div>
           </div>
         </div>
-      ` : pausedSession ? `
+        `;
+      })() : pausedSession ? `
         <div class="mb-6 p-6 rounded-2xl border-2 border-amber-600 bg-amber-950/20">
           <div class="flex items-center justify-between gap-4">
             <div class="flex-1">
@@ -494,7 +500,15 @@ export function renderTimesheet(state, currentUser){
           <div class="flex items-center justify-between gap-4">
             <div class="flex-1">
               <div class="text-lg font-semibold mb-1">No active timer</div>
-              <div class="text-sm text-slate-400">Start a timer to track your work</div>
+              <div class="text-sm text-slate-400 mb-3">Start a timer to track your work</div>
+              ${assignedTasks.length > 0 ? `
+                <select id="timerTaskSelect" class="px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-600 focus:outline-none text-sm">
+                  <option value="">Select a task...</option>
+                  ${assignedTasks.map(t => `
+                    <option value="${t.TaskNodeId}">${escapeHtml(t.Title)}</option>
+                  `).join('')}
+                </select>
+              ` : ''}
             </div>
             <button id="btnStartTimer" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 font-semibold">
               ▶️ Start Timer
@@ -751,9 +765,19 @@ export function renderCalendar(state, currentUser){
   
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Calendar</h1>
-        <p class="text-slate-400">Meetings and deadlines</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">Calendar</h1>
+          <p class="text-slate-400">Meetings and deadlines</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnCreateMeeting" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold text-sm">
+            + New Meeting
+          </button>
+          <button id="btnCreateDeadline" class="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-600 font-semibold text-sm">
+            + New Deadline
+          </button>
+        </div>
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -892,7 +916,12 @@ export function renderUserProfile(state, currentUser){
       
       <!-- Skills -->
       <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
-        <h2 class="text-xl font-semibold mb-4">Skills</h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Skills</h2>
+          <button id="btnManageSkills" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-sm font-semibold">
+            + Add Skill
+          </button>
+        </div>
         ${skills.length === 0 ? '<div class="text-slate-400">No skills recorded</div>' : ''}
         <div class="space-y-3">
           ${skills.map(s => `
@@ -901,12 +930,15 @@ export function renderUserProfile(state, currentUser){
                 <div class="font-medium">${escapeHtml(s.skill?.Name || 'Unknown Skill')}</div>
                 <div class="text-sm text-slate-400">${escapeHtml(s.skill?.Category || '')}</div>
               </div>
-              <div class="px-3 py-1 rounded-lg ${
-                s.proficiency === 'Expert' ? 'bg-emerald-900 text-emerald-300' :
-                s.proficiency === 'Advanced' ? 'bg-cyan-900 text-cyan-300' :
-                s.proficiency === 'Intermediate' ? 'bg-blue-900 text-blue-300' :
-                'bg-slate-700 text-slate-300'
-              } text-xs font-semibold">${escapeHtml(s.proficiency)}</div>
+              <div class="flex items-center gap-2">
+                <div class="px-3 py-1 rounded-lg ${
+                  s.proficiency === 'Expert' ? 'bg-emerald-900 text-emerald-300' :
+                  s.proficiency === 'Advanced' ? 'bg-cyan-900 text-cyan-300' :
+                  s.proficiency === 'Intermediate' ? 'bg-blue-900 text-blue-300' :
+                  'bg-slate-700 text-slate-300'
+                } text-xs font-semibold">${escapeHtml(s.proficiency)}</div>
+                <button data-remove-skill="${s.skill?.SkillId}" class="px-2 py-1 rounded-lg text-xs bg-slate-700 hover:bg-slate-600">Remove</button>
+              </div>
             </div>
           `).join('')}
         </div>
