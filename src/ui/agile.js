@@ -47,6 +47,9 @@ export function renderAgile(params) {
     </div>
   `;
   
+  // Initialize backlog drag-and-drop
+  setupBacklogDragDrop(projectId);
+  
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -62,11 +65,13 @@ export function renderAgile(params) {
       
       if (tab === 'backlog') {
         tabContent.innerHTML = renderBacklogTab(workItems);
+        setupBacklogDragDrop(projectId);
       } else if (tab === 'kanban') {
         tabContent.innerHTML = renderKanbanTab(workItems, activeSprint);
         setupKanbanDragDrop(projectId);
       } else if (tab === 'sprints') {
-        tabContent.innerHTML = renderSprintsTab(sprints, workItems);
+        tabContent.innerHTML = renderSprintsTab(sprints, workItems, projectId);
+        setupSprintPlanningDragDrop(projectId, sprints);
       }
     });
   });
@@ -107,9 +112,11 @@ function renderEpicWithChildren(epic, allItems) {
       </div>
       
       ${children.length > 0 ? `
-        <div class="mt-3 pl-4 border-l-2 border-gray-600 space-y-2">
+        <div class="mt-3 pl-4 border-l-2 border-gray-600 space-y-2 backlog-drop-zone" data-epic-id="${epic.workItemId}">
           ${children.map(child => `
-            <div class="bg-gray-600 rounded p-3">
+            <div class="backlog-card bg-gray-600 rounded p-3 cursor-move hover:bg-gray-550 transition-colors" 
+                 data-item-id="${child.workItemId}" 
+                 draggable="true">
               <div class="flex items-center justify-between">
                 <div class="flex-1">
                   <span class="text-white text-sm">${escapeHtml(child.title)}</span>
@@ -207,7 +214,7 @@ function setupKanbanDragDrop(projectId) {
   });
 }
 
-function renderSprintsTab(sprints, workItems) {
+function renderSprintsTab(sprints, workItems, projectId) {
   return `
     <div class="space-y-4">
       <h2 class="text-xl font-semibold text-white mb-4">Sprints (${sprints.length})</h2>
@@ -231,7 +238,7 @@ function renderSprintsTab(sprints, workItems) {
                   ${createBadge(sprint.status, sprint.status === 'Active' ? 'bg-green-600 text-white' : 'bg-gray-600 text-white')}
                 </div>
                 
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-3 gap-4 mb-4">
                   <div class="bg-gray-700 rounded p-3">
                     <p class="text-gray-400 text-sm">Items</p>
                     <p class="text-white text-xl font-bold">${completedItems.length} / ${sprintItems.length}</p>
@@ -245,6 +252,16 @@ function renderSprintsTab(sprints, workItems) {
                     <p class="text-white text-xl font-bold">${totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0}%</p>
                   </div>
                 </div>
+                
+                <!-- Sprint drop zone for planning -->
+                ${sprint.status !== 'Completed' ? `
+                  <div class="sprint-drop-zone min-h-20 border-2 border-dashed border-gray-600 rounded p-4 text-center text-gray-500 transition-colors hover:border-primary-500 hover:bg-gray-700/30" 
+                       data-sprint-id="${sprint.sprintId}">
+                    ${sprintItems.length === 0 ? 
+                      '<p class="text-sm">Drag work items here to add to sprint</p>' : 
+                      `<p class="text-sm">${sprintItems.length} items in sprint - drag more to add</p>`}
+                  </div>
+                ` : ''}
               </div>
             `;
           }).join('')}
@@ -252,4 +269,101 @@ function renderSprintsTab(sprints, workItems) {
       `}
     </div>
   `;
+}
+
+// Setup drag-and-drop for backlog items
+function setupBacklogDragDrop(projectId) {
+  const cards = document.querySelectorAll('.backlog-card');
+  const dropZones = document.querySelectorAll('.backlog-drop-zone');
+  
+  cards.forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('itemId', card.dataset.itemId);
+      e.dataTransfer.setData('sourceType', 'backlog');
+      card.classList.add('opacity-50');
+    });
+    
+    card.addEventListener('dragend', () => {
+      card.classList.remove('opacity-50');
+    });
+  });
+  
+  dropZones.forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('bg-gray-600/50');
+    });
+    
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('bg-gray-600/50');
+    });
+    
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('bg-gray-600/50');
+      
+      const itemId = e.dataTransfer.getData('itemId');
+      const targetEpicId = zone.dataset.epicId;
+      
+      // Update item's parent
+      store.updateWorkItem(itemId, { parentWorkItemId: targetEpicId });
+      showToast('Item moved to epic', 'success');
+      
+      // Refresh view
+      setTimeout(() => {
+        document.querySelector('.tab-btn[data-tab="backlog"]').click();
+      }, 500);
+    });
+  });
+}
+
+// Setup drag-and-drop for sprint planning
+function setupSprintPlanningDragDrop(projectId, sprints) {
+  const cards = document.querySelectorAll('.backlog-card');
+  const sprintDropZones = document.querySelectorAll('.sprint-drop-zone');
+  
+  // Make backlog cards draggable to sprints
+  cards.forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('itemId', card.dataset.itemId);
+      e.dataTransfer.setData('sourceType', 'backlog');
+      card.classList.add('opacity-50');
+    });
+    
+    card.addEventListener('dragend', () => {
+      card.classList.remove('opacity-50');
+    });
+  });
+  
+  // Setup sprint drop zones
+  sprintDropZones.forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('border-primary-500', 'bg-primary-500/10');
+      zone.classList.remove('border-gray-600');
+    });
+    
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('border-primary-500', 'bg-primary-500/10');
+      zone.classList.add('border-gray-600');
+    });
+    
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('border-primary-500', 'bg-primary-500/10');
+      zone.classList.add('border-gray-600');
+      
+      const itemId = e.dataTransfer.getData('itemId');
+      const sprintId = zone.dataset.sprintId;
+      
+      // Add item to sprint
+      store.updateWorkItem(itemId, { sprintId: sprintId, status: 'Ready' });
+      showToast('Item added to sprint', 'success');
+      
+      // Refresh view
+      setTimeout(() => {
+        document.querySelector('.tab-btn[data-tab="sprints"]').click();
+      }, 500);
+    });
+  });
 }

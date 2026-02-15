@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Base path for GitHub Pages deployment -->
+  <script>
+    // Detect and set base path dynamically
+    (function() {
+      const pathname = window.location.pathname;
+      const basePath = pathname.startsWith('/delegate/') ? '/delegate/' : '/';
+      document.write('<base href="' + basePath + '">');
+    })();
+  </script>
+  
   <title>Delegate - Project Management & Delegation</title>
   <meta name="description" content="Hybrid delegation and project management tool supporting Agile, PMI, and Hybrid methodologies">
   

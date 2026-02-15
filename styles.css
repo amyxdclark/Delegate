@@ -192,3 +192,39 @@
 .spinner {
   animation: spin 1s linear infinite;
 }
+
+/* Enhanced drag-and-drop styles for backlog */
+.backlog-card {
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.backlog-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.backlog-card.opacity-50 {
+  opacity: 0.5;
+}
+
+.backlog-drop-zone {
+  min-height: 60px;
+  transition: background-color 0.2s;
+}
+
+.sprint-drop-zone {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.sprint-drop-zone.border-primary-500 {
+  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

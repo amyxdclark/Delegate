@@ -1,0 +1,437 @@
+diff --git a/.github/workflows/static.yml b/.github/workflows/static.yml
+index f2c9e97..674bf4e 100644
+--- a/.github/workflows/static.yml
++++ b/.github/workflows/static.yml
+@@ -1,5 +1,5 @@
+-# Simple workflow for deploying static content to GitHub Pages
+-name: Deploy static content to Pages
++# Deploy static content to GitHub Pages
++name: Deploy to GitHub Pages
+ 
+ on:
+   # Runs on pushes targeting the default branch
+@@ -31,13 +31,19 @@ jobs:
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
++      
++      - name: Create .nojekyll file
++        run: touch .nojekyll
++      
+       - name: Setup Pages
+         uses: actions/configure-pages@v5
++      
+       - name: Upload artifact
+         uses: actions/upload-pages-artifact@v3
+         with:
+-          # Upload entire repository
++          # Upload only the necessary files for deployment
+           path: '.'
++      
+       - name: Deploy to GitHub Pages
+         id: deployment
+         uses: actions/deploy-pages@v4
+diff --git a/README.md b/README.md
+index da23545..569d43d 100644
+--- a/README.md
++++ b/README.md
+@@ -12,12 +12,16 @@ A production-quality static web application for delegation and project managemen
+ - ✅ **Role Hierarchy Management**: Define organizational structure with parent-child relationships
+ - ✅ **Delegation Tracking**: Track work delegation with RACI matrices and accountability
+ - ✅ **Agile Features**: Backlog, Sprints, Kanban boards, Story points, Burndown charts
++  - 🆕 **Drag-and-Drop**: Reorder backlog items within epics
++  - 🆕 **Sprint Planning**: Drag items from backlog directly into sprints
++  - ✅ **Kanban Workflow**: Drag cards between status columns
+ - ✅ **PMI Features**: WBS tree, Milestones, RAID log, Timeline views
+ - ✅ **Hybrid Mapping**: Link Agile items to PMI WBS nodes with coverage indicators
+ - ✅ **Feature Flags**: Control which features are enabled globally or per-project
+ - ✅ **Demo Mode**: Separate storage for presentations with reset capabilities
+ - ✅ **Data Portability**: Import/Export JSON for backup and migration
+ - ✅ **Responsive Design**: Mobile-first design with dark theme
++- 🆕 **GitHub Pages Ready**: Automatic subpath detection for seamless deployment
+ 
+ ## Technology Stack
+ 
+@@ -55,15 +59,41 @@ http://localhost:8000
+ 
+ ### Deploying to GitHub Pages
+ 
++This application is optimized for GitHub Pages deployment with automatic subpath detection.
++
++#### Setup GitHub Actions Deployment (Recommended)
++
+ 1. Push your code to a GitHub repository
+ 
+-2. Go to repository Settings → Pages
++2. Go to repository **Settings → Pages**
++
++3. Under **Source**, select **GitHub Actions**
++
++4. The included workflow (`.github/workflows/static.yml`) will automatically deploy on push to `main`
++
++5. Your site will be available at: `https://yourusername.github.io/repositoryname/`
++
++#### How It Works
++
++- **Dynamic Base Path**: The app automatically detects if it's running on a subpath (e.g., `/delegate/`) and adjusts all asset paths accordingly
++- **Hash-Based Routing**: Uses hash routing (`#/projects`) which works perfectly with GitHub Pages (no 404 issues on page refresh)
++- **No Build Process Required**: Static files are served directly - no npm install or build step needed
++- **.nojekyll**: Automatically created by the workflow to ensure proper file serving
+ 
+-3. Set the source to deploy from the `main` branch, root directory `/`
++#### Testing Locally
+ 
+-4. GitHub will provide a URL like: `https://yourusername.github.io/Delegate`
++To test the app with the GitHub Pages base path locally:
++```bash
++# Option 1: Using Python
++python -m http.server 8000
++
++# Option 2: Using Node.js
++npx http-server -p 8000
++
++# Then visit: http://localhost:8000
++```
+ 
+-5. Visit the URL to use your deployed app
++The app will automatically detect it's running locally and use `/` as the base path.
+ 
+ ## Project Structure
+ 
+@@ -86,6 +116,7 @@ Delegate/
+ └── src/                   # JavaScript source files
+     ├── index.js           # Application entry point
+     ├── router.js          # Hash-based router
++    ├── config.js          # Base path configuration for GitHub Pages
+     ├── store/             # State management
+     │   ├── store.js       # Central store with CRUD operations
+     │   └── schema.js      # Data schemas and enums
+diff --git a/index.html b/index.html
+index a0d5ba2..56a0b94 100644
+--- a/index.html
++++ b/index.html
+@@ -3,6 +3,17 @@
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  
++  <!-- Base path for GitHub Pages deployment -->
++  <script>
++    // Detect and set base path dynamically
++    (function() {
++      const pathname = window.location.pathname;
++      const basePath = pathname.startsWith('/delegate/') ? '/delegate/' : '/';
++      document.write('<base href="' + basePath + '">');
++    })();
++  </script>
++  
+   <title>Delegate - Project Management & Delegation</title>
+   <meta name="description" content="Hybrid delegation and project management tool supporting Agile, PMI, and Hybrid methodologies">
+   
+diff --git a/src/config.js b/src/config.js
+new file mode 100644
+index 0000000..23b88c1
+--- /dev/null
++++ b/src/config.js
+@@ -0,0 +1,39 @@
++// Base path configuration for GitHub Pages deployment
++
++/**
++ * Determines the base path for the application.
++ * When deployed to GitHub Pages at /delegate/, this returns '/delegate/'
++ * When running locally, this returns '/'
++ */
++export function getBasePath() {
++  // Check if we're on GitHub Pages
++  const { pathname } = window.location;
++  
++  // If pathname starts with /delegate/, we're on GitHub Pages
++  if (pathname.startsWith('/delegate/')) {
++    return '/delegate/';
++  }
++  
++  // Otherwise, we're running locally or on root domain
++  return '/';
++}
++
++/**
++ * Resolves a path relative to the base path
++ * @param {string} path - Path to resolve (e.g., 'data/projects.json')
++ * @returns {string} - Full path including base (e.g., '/delegate/data/projects.json')
++ */
++export function resolvePath(path) {
++  const base = getBasePath();
++  
++  // Remove leading ./ if present
++  const cleanPath = path.replace(/^\.\//, '');
++  
++  // Remove leading / if present to avoid double slashes
++  const normalizedPath = cleanPath.replace(/^\//, '');
++  
++  return `${base}${normalizedPath}`;
++}
++
++// Export base path as a constant for use in imports
++export const BASE_PATH = getBasePath();
+diff --git a/src/store/store.js b/src/store/store.js
+index e44ab1d..200881d 100644
+--- a/src/store/store.js
++++ b/src/store/store.js
+@@ -2,6 +2,7 @@
+ 
+ import { generateId } from '../utils/id.js';
+ import { toISOString } from '../utils/dates.js';
++import { resolvePath } from '../config.js';
+ 
+ const STORAGE_KEY = 'delegate.appState.v1';
+ const DEMO_STORAGE_KEY = 'delegate.demoState.v1';
+@@ -31,16 +32,16 @@ class Store {
+   async loadSeedData() {
+     try {
+       const [company, projects, users, roles, roleAssignments, sprints, workItems, raid, mappings, features] = await Promise.all([
+-        fetch('./data/company.json').then(r => r.json()),
+-        fetch('./data/projects.json').then(r => r.json()),
+-        fetch('./data/users.json').then(r => r.json()),
+-        fetch('./data/roles.json').then(r => r.json()),
+-        fetch('./data/roleAssignments.json').then(r => r.json()),
+-        fetch('./data/sprints.json').then(r => r.json()),
+-        fetch('./data/workItems.json').then(r => r.json()),
+-        fetch('./data/raid.json').then(r => r.json()),
+-        fetch('./data/mappings.json').then(r => r.json()),
+-        fetch('./data/features.json').then(r => r.json())
++        fetch(resolvePath('data/company.json')).then(r => r.json()),
++        fetch(resolvePath('data/projects.json')).then(r => r.json()),
++        fetch(resolvePath('data/users.json')).then(r => r.json()),
++        fetch(resolvePath('data/roles.json')).then(r => r.json()),
++        fetch(resolvePath('data/roleAssignments.json')).then(r => r.json()),
++        fetch(resolvePath('data/sprints.json')).then(r => r.json()),
++        fetch(resolvePath('data/workItems.json')).then(r => r.json()),
++        fetch(resolvePath('data/raid.json')).then(r => r.json()),
++        fetch(resolvePath('data/mappings.json')).then(r => r.json()),
++        fetch(resolvePath('data/features.json')).then(r => r.json())
+       ]);
+       
+       this.seedData = {
+diff --git a/src/ui/agile.js b/src/ui/agile.js
+index 60f1347..3b47c04 100644
+--- a/src/ui/agile.js
++++ b/src/ui/agile.js
+@@ -47,6 +47,9 @@ export function renderAgile(params) {
+     </div>
+   `;
+   
++  // Initialize backlog drag-and-drop
++  setupBacklogDragDrop(projectId);
++  
+   // Tab switching
+   document.querySelectorAll('.tab-btn').forEach(btn => {
+     btn.addEventListener('click', (e) => {
+@@ -62,11 +65,13 @@ export function renderAgile(params) {
+       
+       if (tab === 'backlog') {
+         tabContent.innerHTML = renderBacklogTab(workItems);
++        setupBacklogDragDrop(projectId);
+       } else if (tab === 'kanban') {
+         tabContent.innerHTML = renderKanbanTab(workItems, activeSprint);
+         setupKanbanDragDrop(projectId);
+       } else if (tab === 'sprints') {
+-        tabContent.innerHTML = renderSprintsTab(sprints, workItems);
++        tabContent.innerHTML = renderSprintsTab(sprints, workItems, projectId);
++        setupSprintPlanningDragDrop(projectId, sprints);
+       }
+     });
+   });
+@@ -107,9 +112,11 @@ function renderEpicWithChildren(epic, allItems) {
+       </div>
+       
+       ${children.length > 0 ? `
+-        <div class="mt-3 pl-4 border-l-2 border-gray-600 space-y-2">
++        <div class="mt-3 pl-4 border-l-2 border-gray-600 space-y-2 backlog-drop-zone" data-epic-id="${epic.workItemId}">
+           ${children.map(child => `
+-            <div class="bg-gray-600 rounded p-3">
++            <div class="backlog-card bg-gray-600 rounded p-3 cursor-move hover:bg-gray-550 transition-colors" 
++                 data-item-id="${child.workItemId}" 
++                 draggable="true">
+               <div class="flex items-center justify-between">
+                 <div class="flex-1">
+                   <span class="text-white text-sm">${escapeHtml(child.title)}</span>
+@@ -207,7 +214,7 @@ function setupKanbanDragDrop(projectId) {
+   });
+ }
+ 
+-function renderSprintsTab(sprints, workItems) {
++function renderSprintsTab(sprints, workItems, projectId) {
+   return `
+     <div class="space-y-4">
+       <h2 class="text-xl font-semibold text-white mb-4">Sprints (${sprints.length})</h2>
+@@ -231,7 +238,7 @@ function renderSprintsTab(sprints, workItems) {
+                   ${createBadge(sprint.status, sprint.status === 'Active' ? 'bg-green-600 text-white' : 'bg-gray-600 text-white')}
+                 </div>
+                 
+-                <div class="grid grid-cols-3 gap-4">
++                <div class="grid grid-cols-3 gap-4 mb-4">
+                   <div class="bg-gray-700 rounded p-3">
+                     <p class="text-gray-400 text-sm">Items</p>
+                     <p class="text-white text-xl font-bold">${completedItems.length} / ${sprintItems.length}</p>
+@@ -245,6 +252,16 @@ function renderSprintsTab(sprints, workItems) {
+                     <p class="text-white text-xl font-bold">${totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0}%</p>
+                   </div>
+                 </div>
++                
++                <!-- Sprint drop zone for planning -->
++                ${sprint.status !== 'Completed' ? `
++                  <div class="sprint-drop-zone min-h-20 border-2 border-dashed border-gray-600 rounded p-4 text-center text-gray-500 transition-colors hover:border-primary-500 hover:bg-gray-700/30" 
++                       data-sprint-id="${sprint.sprintId}">
++                    ${sprintItems.length === 0 ? 
++                      '<p class="text-sm">Drag work items here to add to sprint</p>' : 
++                      `<p class="text-sm">${sprintItems.length} items in sprint - drag more to add</p>`}
++                  </div>
++                ` : ''}
+               </div>
+             `;
+           }).join('')}
+@@ -253,3 +270,100 @@ function renderSprintsTab(sprints, workItems) {
+     </div>
+   `;
+ }
++
++// Setup drag-and-drop for backlog items
++function setupBacklogDragDrop(projectId) {
++  const cards = document.querySelectorAll('.backlog-card');
++  const dropZones = document.querySelectorAll('.backlog-drop-zone');
++  
++  cards.forEach(card => {
++    card.addEventListener('dragstart', (e) => {
++      e.dataTransfer.setData('itemId', card.dataset.itemId);
++      e.dataTransfer.setData('sourceType', 'backlog');
++      card.classList.add('opacity-50');
++    });
++    
++    card.addEventListener('dragend', () => {
++      card.classList.remove('opacity-50');
++    });
++  });
++  
++  dropZones.forEach(zone => {
++    zone.addEventListener('dragover', (e) => {
++      e.preventDefault();
++      zone.classList.add('bg-gray-600/50');
++    });
++    
++    zone.addEventListener('dragleave', () => {
++      zone.classList.remove('bg-gray-600/50');
++    });
++    
++    zone.addEventListener('drop', (e) => {
++      e.preventDefault();
++      zone.classList.remove('bg-gray-600/50');
++      
++      const itemId = e.dataTransfer.getData('itemId');
++      const targetEpicId = zone.dataset.epicId;
++      
++      // Update item's parent
++      store.updateWorkItem(itemId, { parentWorkItemId: targetEpicId });
++      showToast('Item moved to epic', 'success');
++      
++      // Refresh view
++      setTimeout(() => {
++        document.querySelector('.tab-btn[data-tab="backlog"]').click();
++      }, 500);
++    });
++  });
++}
++
++// Setup drag-and-drop for sprint planning
++function setupSprintPlanningDragDrop(projectId, sprints) {
++  const cards = document.querySelectorAll('.backlog-card');
++  const sprintDropZones = document.querySelectorAll('.sprint-drop-zone');
++  
++  // Make backlog cards draggable to sprints
++  cards.forEach(card => {
++    card.addEventListener('dragstart', (e) => {
++      e.dataTransfer.setData('itemId', card.dataset.itemId);
++      e.dataTransfer.setData('sourceType', 'backlog');
++      card.classList.add('opacity-50');
++    });
++    
++    card.addEventListener('dragend', () => {
++      card.classList.remove('opacity-50');
++    });
++  });
++  
++  // Setup sprint drop zones
++  sprintDropZones.forEach(zone => {
++    zone.addEventListener('dragover', (e) => {
++      e.preventDefault();
++      zone.classList.add('border-primary-500', 'bg-primary-500/10');
++      zone.classList.remove('border-gray-600');
++    });
++    
++    zone.addEventListener('dragleave', () => {
++      zone.classList.remove('border-primary-500', 'bg-primary-500/10');
++      zone.classList.add('border-gray-600');
++    });
++    
++    zone.addEventListener('drop', (e) => {
++      e.preventDefault();
++      zone.classList.remove('border-primary-500', 'bg-primary-500/10');
++      zone.classList.add('border-gray-600');
++      
++      const itemId = e.dataTransfer.getData('itemId');
++      const sprintId = zone.dataset.sprintId;
++      
++      // Add item to sprint
++      store.updateWorkItem(itemId, { sprintId: sprintId, status: 'Ready' });
++      showToast('Item added to sprint', 'success');
++      
++      // Refresh view
++      setTimeout(() => {
++        document.querySelector('.tab-btn[data-tab="sprints"]').click();
++      }, 500);
++    });
++  });
++}
+diff --git a/styles.css b/styles.css
+index c2aed9a..4092453 100644
+--- a/styles.css
++++ b/styles.css
+@@ -192,3 +192,39 @@
+ .spinner {
+   animation: spin 1s linear infinite;
+ }
++
++/* Enhanced drag-and-drop styles for backlog */
++.backlog-card {
++  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
++}
++
++.backlog-card:hover {
++  transform: translateY(-1px);
++  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
++}
++
++.backlog-card.opacity-50 {
++  opacity: 0.5;
++}
++
++.backlog-drop-zone {
++  min-height: 60px;
++  transition: background-color 0.2s;
++}
++
++.sprint-drop-zone {
++  transition: border-color 0.2s, background-color 0.2s;
++}
++
++.sprint-drop-zone.border-primary-500 {
++  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
++}
++
++@keyframes pulse {
++  0%, 100% {
++    opacity: 1;
++  }
++  50% {
++    opacity: 0.7;
++  }
++}

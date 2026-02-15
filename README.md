@@ -12,12 +12,16 @@ A production-quality static web application for delegation and project managemen
 - ✅ **Role Hierarchy Management**: Define organizational structure with parent-child relationships
 - ✅ **Delegation Tracking**: Track work delegation with RACI matrices and accountability
 - ✅ **Agile Features**: Backlog, Sprints, Kanban boards, Story points, Burndown charts
+  - 🆕 **Drag-and-Drop**: Reorder backlog items within epics
+  - 🆕 **Sprint Planning**: Drag items from backlog directly into sprints
+  - ✅ **Kanban Workflow**: Drag cards between status columns
 - ✅ **PMI Features**: WBS tree, Milestones, RAID log, Timeline views
 - ✅ **Hybrid Mapping**: Link Agile items to PMI WBS nodes with coverage indicators
 - ✅ **Feature Flags**: Control which features are enabled globally or per-project
 - ✅ **Demo Mode**: Separate storage for presentations with reset capabilities
 - ✅ **Data Portability**: Import/Export JSON for backup and migration
 - ✅ **Responsive Design**: Mobile-first design with dark theme
+- 🆕 **GitHub Pages Ready**: Automatic subpath detection for seamless deployment
 
 ## Technology Stack
 
@@ -55,15 +59,41 @@ http://localhost:8000
 
 ### Deploying to GitHub Pages
 
+This application is optimized for GitHub Pages deployment with automatic subpath detection.
+
+#### Setup GitHub Actions Deployment (Recommended)
+
 1. Push your code to a GitHub repository
 
-2. Go to repository Settings → Pages
+2. Go to repository **Settings → Pages**
 
-3. Set the source to deploy from the `main` branch, root directory `/`
+3. Under **Source**, select **GitHub Actions**
 
-4. GitHub will provide a URL like: `https://yourusername.github.io/Delegate`
+4. The included workflow (`.github/workflows/static.yml`) will automatically deploy on push to `main`
 
-5. Visit the URL to use your deployed app
+5. Your site will be available at: `https://yourusername.github.io/repositoryname/`
+
+#### How It Works
+
+- **Dynamic Base Path**: The app automatically detects if it's running on a subpath (e.g., `/delegate/`) and adjusts all asset paths accordingly
+- **Hash-Based Routing**: Uses hash routing (`#/projects`) which works perfectly with GitHub Pages (no 404 issues on page refresh)
+- **No Build Process Required**: Static files are served directly - no npm install or build step needed
+- **.nojekyll**: Automatically created by the workflow to ensure proper file serving
+
+#### Testing Locally
+
+To test the app with the GitHub Pages base path locally:
+```bash
+# Option 1: Using Python
+python -m http.server 8000
+
+# Option 2: Using Node.js
+npx http-server -p 8000
+
+# Then visit: http://localhost:8000
+```
+
+The app will automatically detect it's running locally and use `/` as the base path.
 
 ## Project Structure
 
@@ -86,6 +116,7 @@ Delegate/
 └── src/                   # JavaScript source files
     ├── index.js           # Application entry point
     ├── router.js          # Hash-based router
+    ├── config.js          # Base path configuration for GitHub Pages
     ├── store/             # State management
     │   ├── store.js       # Central store with CRUD operations
     │   └── schema.js      # Data schemas and enums
