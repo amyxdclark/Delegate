@@ -194,23 +194,29 @@ export function renderDashboard(state, currentUser){
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- My Contracts -->
         <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
-          <div class="p-4 border-b border-slate-800">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
             <div class="font-semibold">My Contracts</div>
+            <button data-nav="contracts" class="px-3 py-1.5 rounded-lg text-xs bg-cyan-700 hover:bg-cyan-600">View All</button>
           </div>
           <div class="p-4">
             ${userContracts.length === 0 
               ? '<div class="text-sm text-slate-400">No contracts assigned</div>'
               : userContracts.map(c => `
-                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div class="font-medium">${escapeHtml(c.Name)}</div>
-                  <div class="text-xs text-slate-400 mt-1">${escapeHtml(c.CustomerName)}</div>
-                  <div class="text-xs text-slate-500 mt-1">
-                    ${fmtDate(c.PopStartDate)} - ${fmtDate(c.PopEndDate)}
-                  </div>
-                  <div class="mt-2">
-                    <span class="px-2 py-1 rounded-lg text-xs ${c.Status === 'Active' ? 'bg-emerald-900 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
-                      ${c.Status}
-                    </span>
+                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition cursor-pointer" data-contract-id="${c.ContractId}">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1">
+                      <div class="font-medium">${escapeHtml(c.Name)}</div>
+                      <div class="text-xs text-slate-400 mt-1">${escapeHtml(c.CustomerName)}</div>
+                      <div class="text-xs text-slate-500 mt-1">
+                        ${fmtDate(c.PopStartDate)} - ${fmtDate(c.PopEndDate)}
+                      </div>
+                      <div class="mt-2">
+                        <span class="px-2 py-1 rounded-lg text-xs ${c.Status === 'Active' ? 'bg-emerald-900 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
+                          ${c.Status}
+                        </span>
+                      </div>
+                    </div>
+                    <button data-view-contract="${c.ContractId}" class="px-2 py-1 rounded-lg text-xs bg-slate-700 hover:bg-slate-600">View</button>
                   </div>
                 </div>
               `).join('')
@@ -220,20 +226,26 @@ export function renderDashboard(state, currentUser){
         
         <!-- My Tasks -->
         <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
-          <div class="p-4 border-b border-slate-800">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
             <div class="font-semibold">My Active Tasks</div>
+            <button data-nav="tasks" class="px-3 py-1.5 rounded-lg text-xs bg-cyan-700 hover:bg-cyan-600">View All</button>
           </div>
           <div class="p-4">
             ${assignedTasks.length === 0
               ? '<div class="text-sm text-slate-400">No active tasks</div>'
               : assignedTasks.slice(0, 5).map(t => `
-                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div class="font-medium text-sm">${escapeHtml(t.Title)}</div>
-                  <div class="text-xs text-slate-400 mt-1">${escapeHtml(clampText(t.Description, 80))}</div>
-                  <div class="mt-2">
-                    <span class="px-2 py-1 rounded-lg text-xs ${statusColor(t.Status)}">
-                      ${t.Status}
-                    </span>
+                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition cursor-pointer" data-task-id="${t.TaskNodeId}">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${escapeHtml(t.Title)}</div>
+                      <div class="text-xs text-slate-400 mt-1">${escapeHtml(clampText(t.Description, 80))}</div>
+                      <div class="mt-2">
+                        <span class="px-2 py-1 rounded-lg text-xs ${statusColor(t.Status)}">
+                          ${t.Status}
+                        </span>
+                      </div>
+                    </div>
+                    <button data-view-task="${t.TaskNodeId}" class="px-2 py-1 rounded-lg text-xs bg-slate-700 hover:bg-slate-600">View</button>
                   </div>
                 </div>
               `).join('')
@@ -290,11 +302,14 @@ export function renderContracts(state, currentUser){
           <h1 class="text-2xl font-bold mb-2">Contracts</h1>
           <p class="text-slate-400">Manage your active and past contracts</p>
         </div>
+        <button id="btnCreateContract" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition flex items-center gap-2">
+          <span>+</span> New Contract
+        </button>
       </div>
       
       <div class="grid grid-cols-1 gap-4">
         ${contracts.map(c => `
-          <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/20">
+          <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/20 hover:border-slate-700 transition cursor-pointer" data-contract-id="${c.ContractId}">
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1">
                 <h3 class="text-xl font-semibold mb-2">${escapeHtml(c.Name)}</h3>
@@ -323,11 +338,22 @@ export function renderContracts(state, currentUser){
                 
                 ${c.Description ? `<div class="text-sm text-slate-400 mt-3">${escapeHtml(c.Description)}</div>` : ''}
               </div>
+              <div class="flex flex-col gap-2">
+                <button data-view-contract="${c.ContractId}" class="px-3 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600 whitespace-nowrap">View Details</button>
+                <button data-edit-contract="${c.ContractId}" class="px-3 py-2 rounded-lg text-sm bg-slate-800 hover:bg-slate-700 whitespace-nowrap">Edit</button>
+              </div>
             </div>
           </div>
         `).join('')}
         
-        ${contracts.length === 0 ? '<div class="text-center py-12 text-slate-400">No contracts found</div>' : ''}
+        ${contracts.length === 0 ? `
+          <div class="text-center py-12">
+            <div class="text-slate-400 mb-4">No contracts found</div>
+            <button id="btnCreateContractEmpty" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition">
+              Create Your First Contract
+            </button>
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -350,9 +376,14 @@ export function renderTasks(state, currentUser){
   
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">My Tasks</h1>
-        <p class="text-slate-400">Tasks assigned to you</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">My Tasks</h1>
+          <p class="text-slate-400">Tasks assigned to you</p>
+        </div>
+        <button id="btnCreateTask" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition flex items-center gap-2">
+          <span>+</span> New Task
+        </button>
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -364,14 +395,18 @@ export function renderTasks(state, currentUser){
             </div>
             <div class="p-3 space-y-2 max-h-[600px] overflow-y-auto">
               ${statusTasks.map(t => `
-                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition cursor-pointer group" data-task-id="${t.TaskNodeId}">
                   <div class="font-medium text-sm mb-1">${escapeHtml(t.Title)}</div>
                   <div class="text-xs text-slate-400 mb-2">${escapeHtml(clampText(t.Description || '', 60))}</div>
                   ${t.ScopedHours ? `
-                    <div class="text-xs text-slate-500">
+                    <div class="text-xs text-slate-500 mb-2">
                       ${fmtHours(t.ChargedHours || 0)} / ${fmtHours(t.ScopedHours)} hrs
                     </div>
                   ` : ''}
+                  <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <button data-view-task="${t.TaskNodeId}" class="px-2 py-1 rounded-lg text-xs bg-slate-700 hover:bg-slate-600 flex-1">View</button>
+                    <button data-edit-task="${t.TaskNodeId}" class="px-2 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 flex-1">Edit</button>
+                  </div>
                 </div>
               `).join('')}
               ${statusTasks.length === 0 ? '<div class="text-sm text-slate-400 text-center py-4">No tasks</div>' : ''}
@@ -537,9 +572,14 @@ export function renderForum(state, currentUser){
   
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Forum</h1>
-        <p class="text-slate-400">Discussions, blockers, and decisions</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">Forum</h1>
+          <p class="text-slate-400">Discussions, blockers, and decisions</p>
+        </div>
+        <button id="btnCreateForumThread" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition flex items-center gap-2">
+          <span>+</span> New Thread
+        </button>
       </div>
       
       <div class="space-y-4">
@@ -548,7 +588,7 @@ export function renderForum(state, currentUser){
           const author = state.users?.find(u => u.UserId === thread.CreatedBy);
           
           return `
-            <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
+            <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden hover:border-slate-700 transition cursor-pointer" data-thread-id="${thread.ThreadId}">
               <div class="p-4 border-b border-slate-800">
                 <div class="flex items-start justify-between gap-4">
                   <div class="flex-1">
@@ -562,7 +602,10 @@ export function renderForum(state, currentUser){
                       Posted by ${escapeHtml(author?.DisplayName || 'Unknown')} • ${fmtDateTime(thread.CreatedUtc)}
                     </div>
                   </div>
-                  <div class="text-sm text-slate-400">${posts.length} ${posts.length === 1 ? 'reply' : 'replies'}</div>
+                  <div class="flex flex-col gap-2">
+                    <button data-view-thread="${thread.ThreadId}" class="px-3 py-1.5 rounded-lg text-xs bg-slate-700 hover:bg-slate-600 whitespace-nowrap">View Thread</button>
+                    <button data-reply-thread="${thread.ThreadId}" class="px-3 py-1.5 rounded-lg text-xs bg-cyan-800 hover:bg-cyan-700 whitespace-nowrap">Reply</button>
+                  </div>
                 </div>
               </div>
               
@@ -584,12 +627,21 @@ export function renderForum(state, currentUser){
                   }).join('')}
                   ${posts.length > 3 ? `<div class="text-sm text-slate-400 text-center">+ ${posts.length - 3} more replies</div>` : ''}
                 </div>
-              ` : ''}
+              ` : `
+                <div class="p-4 text-sm text-slate-400 text-center">No replies yet. Be the first to reply!</div>
+              `}
             </div>
           `;
         }).join('')}
         
-        ${threads.length === 0 ? '<div class="text-center py-12 text-slate-400">No forum threads yet</div>' : ''}
+        ${threads.length === 0 ? `
+          <div class="text-center py-12">
+            <div class="text-slate-400 mb-4">No forum threads yet</div>
+            <button id="btnCreateForumThreadEmpty" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition">
+              Start a Discussion
+            </button>
+          </div>
+        ` : ''}
       </div>
     </div>
   `;

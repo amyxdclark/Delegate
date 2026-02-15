@@ -102,13 +102,16 @@ function renderCurrentView(){
   switch(currentView){
     case 'dashboard':
       contentArea.innerHTML = renderDashboard(state, currentUser);
+      wireDashboardActions();
       break;
     case 'contracts':
       contentArea.innerHTML = renderContracts(state, currentUser);
+      wireContractActions();
       break;
     case 'tasks':
       contentArea.innerHTML = renderTasks(state, currentUser);
       wireTasks();
+      wireTaskActions();
       break;
     case 'timesheet':
       contentArea.innerHTML = renderTimesheet(state, currentUser);
@@ -533,6 +536,136 @@ function wireTasks(){
   // TODO: Wire up task editing, status transitions, hierarchy display
 }
 
+// Wire dashboard interactive features
+function wireDashboardActions(){
+  // Wire "View All" buttons
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const view = e.target.getAttribute('data-nav');
+      if(view){
+        currentView = view;
+        renderCurrentView();
+      }
+    });
+  });
+  
+  // Wire contract view buttons
+  document.querySelectorAll('[data-view-contract]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const contractId = e.target.getAttribute('data-view-contract');
+      openContractDetailModal(contractId);
+    });
+  });
+  
+  // Wire task view buttons
+  document.querySelectorAll('[data-view-task]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const taskId = e.target.getAttribute('data-view-task');
+      openTaskDetailModal(taskId);
+    });
+  });
+  
+  // Wire clickable contract cards
+  document.querySelectorAll('[data-contract-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking a button
+      if(e.target.tagName === 'BUTTON') return;
+      const contractId = card.getAttribute('data-contract-id');
+      openContractDetailModal(contractId);
+    });
+  });
+  
+  // Wire clickable task cards
+  document.querySelectorAll('[data-task-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking a button
+      if(e.target.tagName === 'BUTTON') return;
+      const taskId = card.getAttribute('data-task-id');
+      openTaskDetailModal(taskId);
+    });
+  });
+}
+
+// Wire contract view interactive features
+function wireContractActions(){
+  // Wire create contract button
+  const btnCreate = el("btnCreateContract");
+  const btnCreateEmpty = el("btnCreateContractEmpty");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreateContractModal());
+  }
+  if(btnCreateEmpty){
+    btnCreateEmpty.addEventListener("click", () => openCreateContractModal());
+  }
+  
+  // Wire view contract buttons
+  document.querySelectorAll('[data-view-contract]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const contractId = e.target.getAttribute('data-view-contract');
+      openContractDetailModal(contractId);
+    });
+  });
+  
+  // Wire edit contract buttons
+  document.querySelectorAll('[data-edit-contract]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const contractId = e.target.getAttribute('data-edit-contract');
+      openEditContractModal(contractId);
+    });
+  });
+  
+  // Wire clickable contract cards
+  document.querySelectorAll('[data-contract-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking a button
+      if(e.target.tagName === 'BUTTON') return;
+      const contractId = card.getAttribute('data-contract-id');
+      openContractDetailModal(contractId);
+    });
+  });
+}
+
+// Wire task view interactive features
+function wireTaskActions(){
+  // Wire create task button
+  const btnCreate = el("btnCreateTask");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreateTaskModal());
+  }
+  
+  // Wire view task buttons
+  document.querySelectorAll('[data-view-task]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const taskId = e.target.getAttribute('data-view-task');
+      openTaskDetailModal(taskId);
+    });
+  });
+  
+  // Wire edit task buttons
+  document.querySelectorAll('[data-edit-task]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const taskId = e.target.getAttribute('data-edit-task');
+      openEditTaskModal(taskId);
+    });
+  });
+  
+  // Wire clickable task cards
+  document.querySelectorAll('[data-task-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking a button
+      if(e.target.tagName === 'BUTTON') return;
+      const taskId = card.getAttribute('data-task-id');
+      openTaskDetailModal(taskId);
+    });
+  });
+}
+
 function wireTimesheetActions(){
   // Wire create time entry button
   const btnCreate = el("btnCreateTimeEntry");
@@ -555,7 +688,43 @@ function wireTimesheetActions(){
 }
 
 function wireForumActions(){
-  // TODO: Wire up forum thread/post creation, attachments, badges
+  // Wire create thread buttons
+  const btnCreate = el("btnCreateForumThread");
+  const btnCreateEmpty = el("btnCreateForumThreadEmpty");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreateForumThreadModal());
+  }
+  if(btnCreateEmpty){
+    btnCreateEmpty.addEventListener("click", () => openCreateForumThreadModal());
+  }
+  
+  // Wire view thread buttons
+  document.querySelectorAll('[data-view-thread]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const threadId = e.target.getAttribute('data-view-thread');
+      openForumThreadDetailModal(threadId);
+    });
+  });
+  
+  // Wire reply buttons
+  document.querySelectorAll('[data-reply-thread]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const threadId = e.target.getAttribute('data-reply-thread');
+      openReplyToThreadModal(threadId);
+    });
+  });
+  
+  // Wire clickable thread cards
+  document.querySelectorAll('[data-thread-id]').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't trigger if clicking a button
+      if(e.target.tagName === 'BUTTON') return;
+      const threadId = card.getAttribute('data-thread-id');
+      openForumThreadDetailModal(threadId);
+    });
+  });
 }
 
 function wireChatActions(){
@@ -740,4 +909,631 @@ function denyPTO(ptoId){
     renderCurrentView();
   }
 }
+
+// ===== Contract Modals =====
+function openContractDetailModal(contractId){
+  const contract = state.contracts.find(c => c.ContractId === contractId);
+  if(!contract) return;
+  
+  const body = `
+    <div class="space-y-4">
+      <div>
+        <div class="text-sm text-slate-400 mb-1">Contract Name</div>
+        <div class="font-semibold">${escapeHtml(contract.Name)}</div>
+      </div>
+      
+      <div>
+        <div class="text-sm text-slate-400 mb-1">Customer</div>
+        <div>${escapeHtml(contract.CustomerName)}</div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Contract Number</div>
+          <div class="font-mono text-sm">${escapeHtml(contract.ContractNumber)}</div>
+        </div>
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Status</div>
+          <div><span class="px-2 py-1 rounded-lg text-xs ${contract.Status === 'Active' ? 'bg-emerald-900 text-emerald-300' : 'bg-slate-800 text-slate-400'}">${contract.Status}</span></div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Start Date</div>
+          <div>${new Date(contract.PopStartDate).toLocaleDateString()}</div>
+        </div>
+        <div>
+          <div class="text-sm text-slate-400 mb-1">End Date</div>
+          <div>${new Date(contract.PopEndDate).toLocaleDateString()}</div>
+        </div>
+      </div>
+      
+      ${contract.TotalValue ? `
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Total Value</div>
+          <div class="text-xl font-bold">$${contract.TotalValue.toLocaleString()}</div>
+        </div>
+      ` : ''}
+      
+      ${contract.Description ? `
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Description</div>
+          <div class="text-sm">${escapeHtml(contract.Description)}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Close</button>
+    <button id="btnEditContractFromDetail" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Edit Contract</button>
+  `;
+  setModal(modal("Contract Details", body, footer));
+  
+  const btnEdit = el("btnEditContractFromDetail");
+  if(btnEdit){
+    btnEdit.addEventListener("click", () => {
+      setModal("");
+      openEditContractModal(contractId);
+    });
+  }
+}
+
+function openCreateContractModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Contract Name *</div>
+        <input type="text" id="contractName" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter contract name" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Customer Name *</div>
+        <input type="text" id="contractCustomer" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter customer name" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Contract Number *</div>
+        <input type="text" id="contractNumber" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="e.g., GS-35F-0123A" />
+      </label>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <label class="block">
+          <div class="text-sm text-slate-300 mb-2">Start Date *</div>
+          <input type="date" id="contractStartDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" />
+        </label>
+        
+        <label class="block">
+          <div class="text-sm text-slate-300 mb-2">End Date *</div>
+          <input type="date" id="contractEndDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" />
+        </label>
+      </div>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Total Value</div>
+        <input type="number" id="contractValue" min="0" step="1000" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="0" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Status</div>
+        <select id="contractStatus" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option>Pending</option>
+          <option>Active</option>
+          <option>Completed</option>
+          <option>Cancelled</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="contractDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter contract description"></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveContract" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Contract</button>
+  `;
+  setModal(modal("Create New Contract", body, footer));
+  
+  el("btnSaveContract").addEventListener("click", () => {
+    const name = el("contractName").value.trim();
+    const customer = el("contractCustomer").value.trim();
+    const number = el("contractNumber").value.trim();
+    const startDate = el("contractStartDate").value;
+    const endDate = el("contractEndDate").value;
+    const value = parseFloat(el("contractValue").value) || null;
+    const status = el("contractStatus").value;
+    const description = el("contractDescription").value.trim();
+    
+    if(!name || !customer || !number || !startDate || !endDate){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const contract = {
+      ContractId: uid('CONT'),
+      TenantId: currentUser.tenantId,
+      Name: name,
+      CustomerName: customer,
+      ContractNumber: number,
+      PopStartDate: startDate,
+      PopEndDate: endDate,
+      TotalValue: value,
+      Status: status,
+      Description: description,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.contracts, contract);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function openEditContractModal(contractId){
+  const contract = state.contracts.find(c => c.ContractId === contractId);
+  if(!contract) return;
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Contract Name *</div>
+        <input type="text" id="contractName" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${escapeHtml(contract.Name)}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Customer Name *</div>
+        <input type="text" id="contractCustomer" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${escapeHtml(contract.CustomerName)}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Contract Number *</div>
+        <input type="text" id="contractNumber" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${escapeHtml(contract.ContractNumber)}" />
+      </label>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <label class="block">
+          <div class="text-sm text-slate-300 mb-2">Start Date *</div>
+          <input type="date" id="contractStartDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${contract.PopStartDate}" />
+        </label>
+        
+        <label class="block">
+          <div class="text-sm text-slate-300 mb-2">End Date *</div>
+          <input type="date" id="contractEndDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${contract.PopEndDate}" />
+        </label>
+      </div>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Total Value</div>
+        <input type="number" id="contractValue" min="0" step="1000" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${contract.TotalValue || ''}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Status</div>
+        <select id="contractStatus" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option ${contract.Status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option ${contract.Status === 'Active' ? 'selected' : ''}>Active</option>
+          <option ${contract.Status === 'Completed' ? 'selected' : ''}>Completed</option>
+          <option ${contract.Status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="contractDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">${escapeHtml(contract.Description || '')}</textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnUpdateContract" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Update Contract</button>
+  `;
+  setModal(modal("Edit Contract", body, footer));
+  
+  el("btnUpdateContract").addEventListener("click", () => {
+    const name = el("contractName").value.trim();
+    const customer = el("contractCustomer").value.trim();
+    const number = el("contractNumber").value.trim();
+    const startDate = el("contractStartDate").value;
+    const endDate = el("contractEndDate").value;
+    const value = parseFloat(el("contractValue").value) || null;
+    const status = el("contractStatus").value;
+    const description = el("contractDescription").value.trim();
+    
+    if(!name || !customer || !number || !startDate || !endDate){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    contract.Name = name;
+    contract.CustomerName = customer;
+    contract.ContractNumber = number;
+    contract.PopStartDate = startDate;
+    contract.PopEndDate = endDate;
+    contract.TotalValue = value;
+    contract.Status = status;
+    contract.Description = description;
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+// ===== Task Modals =====
+function openTaskDetailModal(taskId){
+  const task = state.taskNodes.find(t => t.TaskNodeId === taskId);
+  if(!task) return;
+  
+  const body = `
+    <div class="space-y-4">
+      <div>
+        <div class="text-sm text-slate-400 mb-1">Task Title</div>
+        <div class="font-semibold">${escapeHtml(task.Title)}</div>
+      </div>
+      
+      <div>
+        <div class="text-sm text-slate-400 mb-1">Status</div>
+        <div><span class="px-2 py-1 rounded-lg text-xs ${statusColor(task.Status)}">${task.Status}</span></div>
+      </div>
+      
+      ${task.Description ? `
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Description</div>
+          <div class="text-sm">${escapeHtml(task.Description)}</div>
+        </div>
+      ` : ''}
+      
+      ${task.ScopedHours ? `
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-slate-400 mb-1">Scoped Hours</div>
+            <div>${task.ScopedHours} hrs</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400 mb-1">Charged Hours</div>
+            <div>${task.ChargedHours || 0} hrs</div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Close</button>
+    <button id="btnEditTaskFromDetail" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Edit Task</button>
+  `;
+  setModal(modal("Task Details", body, footer));
+  
+  const btnEdit = el("btnEditTaskFromDetail");
+  if(btnEdit){
+    btnEdit.addEventListener("click", () => {
+      setModal("");
+      openEditTaskModal(taskId);
+    });
+  }
+}
+
+function openCreateTaskModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Task Title *</div>
+        <input type="text" id="taskTitle" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter task title" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="taskDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter task description"></textarea>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Status</div>
+        <select id="taskStatus" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option>NotStarted</option>
+          <option>InProgress</option>
+          <option>Blocked</option>
+          <option>Done</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Scoped Hours</div>
+        <input type="number" id="taskHours" min="0" step="0.5" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="0" />
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveTask" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Task</button>
+  `;
+  setModal(modal("Create New Task", body, footer));
+  
+  el("btnSaveTask").addEventListener("click", () => {
+    const title = el("taskTitle").value.trim();
+    const description = el("taskDescription").value.trim();
+    const status = el("taskStatus").value;
+    const hours = parseFloat(el("taskHours").value) || null;
+    
+    if(!title){
+      alert("Please enter a task title");
+      return;
+    }
+    
+    const task = {
+      TaskNodeId: uid('TASK'),
+      TenantId: currentUser.tenantId,
+      Title: title,
+      Description: description,
+      Status: status,
+      ScopedHours: hours,
+      ChargedHours: 0,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.taskNodes, task);
+    
+    // Auto-assign to current user
+    const assignment = {
+      TaskAssignmentId: uid('TA'),
+      TenantId: currentUser.tenantId,
+      TaskNodeId: task.TaskNodeId,
+      UserId: currentUser.userId,
+      AssignedUtc: new Date().toISOString()
+    };
+    addToCollection(state.taskAssignments, assignment);
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function openEditTaskModal(taskId){
+  const task = state.taskNodes.find(t => t.TaskNodeId === taskId);
+  if(!task) return;
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Task Title *</div>
+        <input type="text" id="taskTitle" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${escapeHtml(task.Title)}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Description</div>
+        <textarea id="taskDescription" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">${escapeHtml(task.Description || '')}</textarea>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Status</div>
+        <select id="taskStatus" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option ${task.Status === 'NotStarted' ? 'selected' : ''}>NotStarted</option>
+          <option ${task.Status === 'InProgress' ? 'selected' : ''}>InProgress</option>
+          <option ${task.Status === 'Blocked' ? 'selected' : ''}>Blocked</option>
+          <option ${task.Status === 'Done' ? 'selected' : ''}>Done</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Scoped Hours</div>
+        <input type="number" id="taskHours" min="0" step="0.5" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${task.ScopedHours || ''}" />
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnUpdateTask" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Update Task</button>
+  `;
+  setModal(modal("Edit Task", body, footer));
+  
+  el("btnUpdateTask").addEventListener("click", () => {
+    const title = el("taskTitle").value.trim();
+    const description = el("taskDescription").value.trim();
+    const status = el("taskStatus").value;
+    const hours = parseFloat(el("taskHours").value) || null;
+    
+    if(!title){
+      alert("Please enter a task title");
+      return;
+    }
+    
+    task.Title = title;
+    task.Description = description;
+    task.Status = status;
+    task.ScopedHours = hours;
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+// ===== Forum Modals =====
+function openForumThreadDetailModal(threadId){
+  const thread = state.forumThreads.find(t => t.ThreadId === threadId);
+  if(!thread) return;
+  
+  const posts = (state.forumPosts || []).filter(p => p.ThreadId === threadId);
+  const author = state.users?.find(u => u.UserId === thread.CreatedBy);
+  
+  const body = `
+    <div class="space-y-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="text-lg font-semibold">${escapeHtml(thread.Title)}</h3>
+          ${thread.IsBlocking ? '<span class="px-2 py-1 rounded-lg text-xs bg-rose-900 text-rose-300">🚫 Blocker</span>' : ''}
+          ${thread.RequiresDecision ? '<span class="px-2 py-1 rounded-lg text-xs bg-amber-900 text-amber-300">⚠️ Decision Required</span>' : ''}
+        </div>
+        <div class="text-sm text-slate-400">
+          Posted by ${escapeHtml(author?.DisplayName || 'Unknown')} • ${new Date(thread.CreatedUtc).toLocaleString()}
+        </div>
+      </div>
+      
+      <div class="border-t border-slate-800 pt-4">
+        <div class="text-sm font-semibold mb-3">${posts.length} ${posts.length === 1 ? 'Reply' : 'Replies'}</div>
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+          ${posts.map(post => {
+            const postAuthor = state.users?.find(u => u.UserId === post.CreatedBy);
+            return `
+              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-sm font-medium mb-1">${escapeHtml(postAuthor?.DisplayName || 'Unknown')}</div>
+                <div class="text-sm text-slate-300 mb-2">${escapeHtml(post.Body)}</div>
+                <div class="text-xs text-slate-500">${new Date(post.CreatedUtc).toLocaleString()}</div>
+              </div>
+            `;
+          }).join('')}
+          ${posts.length === 0 ? '<div class="text-sm text-slate-400 text-center py-4">No replies yet</div>' : ''}
+        </div>
+      </div>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Close</button>
+    <button id="btnReplyFromDetail" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Add Reply</button>
+  `;
+  setModal(modal("Forum Thread", body, footer));
+  
+  const btnReply = el("btnReplyFromDetail");
+  if(btnReply){
+    btnReply.addEventListener("click", () => {
+      setModal("");
+      openReplyToThreadModal(threadId);
+    });
+  }
+}
+
+function openCreateForumThreadModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Thread Title *</div>
+        <input type="text" id="threadTitle" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Enter thread title" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Initial Message *</div>
+        <textarea id="threadBody" rows="4" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Start the discussion..."></textarea>
+      </label>
+      
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="threadBlocking" class="rounded border-slate-700 bg-slate-900 text-cyan-600 focus:ring-cyan-600 focus:ring-offset-slate-950" />
+          <span class="text-sm">Mark as blocker</span>
+        </label>
+        
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="threadDecision" class="rounded border-slate-700 bg-slate-900 text-cyan-600 focus:ring-cyan-600 focus:ring-offset-slate-950" />
+          <span class="text-sm">Requires decision</span>
+        </label>
+      </div>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnCreateThread" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Thread</button>
+  `;
+  setModal(modal("Create Forum Thread", body, footer));
+  
+  el("btnCreateThread").addEventListener("click", () => {
+    const title = el("threadTitle").value.trim();
+    const body = el("threadBody").value.trim();
+    const isBlocking = el("threadBlocking").checked;
+    const requiresDecision = el("threadDecision").checked;
+    
+    if(!title || !body){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const thread = {
+      ThreadId: uid('THREAD'),
+      TenantId: currentUser.tenantId,
+      Title: title,
+      IsBlocking: isBlocking,
+      RequiresDecision: requiresDecision,
+      IsClosed: false,
+      CreatedBy: currentUser.userId,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.forumThreads, thread);
+    
+    // Add initial post
+    const post = {
+      PostId: uid('POST'),
+      ThreadId: thread.ThreadId,
+      TenantId: currentUser.tenantId,
+      Body: body,
+      CreatedBy: currentUser.userId,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.forumPosts, post);
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function openReplyToThreadModal(threadId){
+  const thread = state.forumThreads.find(t => t.ThreadId === threadId);
+  if(!thread) return;
+  
+  const body = `
+    <div class="space-y-4">
+      <div>
+        <div class="text-sm text-slate-400 mb-1">Replying to</div>
+        <div class="font-semibold">${escapeHtml(thread.Title)}</div>
+      </div>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Your Reply *</div>
+        <textarea id="replyBody" rows="4" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="Write your reply..."></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnPostReply" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Post Reply</button>
+  `;
+  setModal(modal("Reply to Thread", body, footer));
+  
+  el("btnPostReply").addEventListener("click", () => {
+    const body = el("replyBody").value.trim();
+    
+    if(!body){
+      alert("Please enter a reply");
+      return;
+    }
+    
+    const post = {
+      PostId: uid('POST'),
+      ThreadId: threadId,
+      TenantId: currentUser.tenantId,
+      Body: body,
+      CreatedBy: currentUser.userId,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.forumPosts, post);
+    
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function statusColor(status){
+  const colors = {
+    'NotStarted': 'bg-slate-800 text-slate-400',
+    'InProgress': 'bg-cyan-900 text-cyan-300',
+    'Blocked': 'bg-rose-900 text-rose-300',
+    'Done': 'bg-emerald-900 text-emerald-300'
+  };
+  return colors[status] || 'bg-slate-800 text-slate-400';
+}
+
 
