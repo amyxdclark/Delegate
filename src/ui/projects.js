@@ -4,7 +4,7 @@ import { store } from '../store/store.js';
 import { router } from '../router.js';
 import { renderLayout } from './layout.js';
 import { showModal, showConfirm, showToast, createEmptyState, createInput, createTextarea, createSelect } from './components.js';
-import { formatDate } from '../utils/dates.js';
+import { formatDate, formatDateInput } from '../utils/dates.js';
 import { escapeHtml } from '../utils/dom.js';
 import { MethodologyMode, ProjectStatus } from '../store/schema.js';
 
@@ -241,8 +241,8 @@ function showEditProjectModal(project) {
         { value: ProjectStatus.COMPLETED, label: 'Completed' },
         { value: ProjectStatus.CANCELLED, label: 'Cancelled' }
       ], project.status, true)}
-      ${createInput('Start Date', 'startDate', 'date', formatDate(project.startDate), true)}
-      ${createInput('End Date', 'endDate', 'date', project.endDate ? formatDate(project.endDate) : '', false)}
+      ${createInput('Start Date', 'startDate', 'date', formatDateInput(project.startDate), true)}
+      ${createInput('End Date', 'endDate', 'date', project.endDate ? formatDateInput(project.endDate) : '', false)}
       
       <div class="flex justify-end gap-3 mt-6">
         <button type="button" class="cancel-btn px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded">
