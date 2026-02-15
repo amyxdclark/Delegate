@@ -1,0 +1,30 @@
+[
+  {
+    "MeetingId": "MEET_001",
+    "TenantId": "TENANT001",
+    "Title": "Security Assessment Milestone Review with DOD",
+    "StartUtc": "2026-02-20T14:00:00Z",
+    "EndUtc": "2026-02-20T16:00:00Z",
+    "LocationOrLink": "https://dod.webex.com/meet/apexfederal",
+    "OrganizerUserId": "USER_APEX_PM1",
+    "RelatedContractId": "CONTRACT_APEX_001",
+    "RelatedTaskNodeId": "TASK_APEX_001_AREA1",
+    "AgendaMarkdown": "1. Review vulnerability scan results\n2. Discuss penetration testing findings\n3. Next steps and timeline\n4. Q&A",
+    "SummaryForumPostId": null,
+    "CreatedUtc": "2026-02-01T14:30:00Z"
+  },
+  {
+    "MeetingId": "MEET_002",
+    "TenantId": "TENANT001",
+    "Title": "Weekly Team Standup",
+    "StartUtc": "2026-02-17T09:00:00Z",
+    "EndUtc": "2026-02-17T09:30:00Z",
+    "LocationOrLink": "Conference Room A",
+    "OrganizerUserId": "USER_APEX_LEAD1",
+    "RelatedContractId": "CONTRACT_APEX_001",
+    "RelatedTaskNodeId": null,
+    "AgendaMarkdown": "Quick status updates from all team members",
+    "SummaryForumPostId": null,
+    "CreatedUtc": "2026-02-10T10:00:00Z"
+  }
+]

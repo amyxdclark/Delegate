@@ -1,0 +1,47 @@
+[
+  {
+    "PtoEntryId": "PTO_001",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER1",
+    "Type": "Planned",
+    "Category": "Vacation",
+    "StartUtc": "2026-03-10T00:00:00Z",
+    "EndUtc": "2026-03-14T23:59:59Z",
+    "Hours": 40,
+    "Status": "Approved",
+    "ApprovedByUserId": "USER_APEX_PM1",
+    "ApprovedUtc": "2026-02-05T10:00:00Z",
+    "Notes": "Spring vacation",
+    "CreatedUtc": "2026-02-01T09:00:00Z"
+  },
+  {
+    "PtoEntryId": "PTO_002",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "Type": "Planned",
+    "Category": "Training",
+    "StartUtc": "2026-02-24T00:00:00Z",
+    "EndUtc": "2026-02-25T23:59:59Z",
+    "Hours": 16,
+    "Status": "Submitted",
+    "ApprovedByUserId": null,
+    "ApprovedUtc": null,
+    "Notes": "AWS Certification Training",
+    "CreatedUtc": "2026-02-10T14:00:00Z"
+  },
+  {
+    "PtoEntryId": "PTO_003",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_LEAD1",
+    "Type": "Unplanned",
+    "Category": "Sick",
+    "StartUtc": "2026-02-12T00:00:00Z",
+    "EndUtc": "2026-02-12T23:59:59Z",
+    "Hours": 8,
+    "Status": "Approved",
+    "ApprovedByUserId": "USER_APEX_PM1",
+    "ApprovedUtc": "2026-02-12T08:30:00Z",
+    "Notes": "Sick day",
+    "CreatedUtc": "2026-02-12T08:00:00Z"
+  }
+]

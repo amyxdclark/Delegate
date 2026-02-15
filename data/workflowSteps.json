@@ -1,0 +1,101 @@
+[
+  {
+    "StepId": "STEP_SCOPING",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "Scoping",
+    "SortOrder": 0,
+    "AllowedRolesToActJson": "[\"ROLE_TASK_LEAD\", \"ROLE_PROJECT_MANAGER\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_PROJECT_MANAGER\"]",
+    "EntryCriteriaJson": "{}",
+    "ExitCriteriaJson": "{\"requires_scope_approval\": true}"
+  },
+  {
+    "StepId": "STEP_PM_ALLOCATION",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "PM Allocation Approval",
+    "SortOrder": 1,
+    "AllowedRolesToActJson": "[\"ROLE_PROJECT_MANAGER\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_PROJECT_MANAGER\"]",
+    "EntryCriteriaJson": "{\"scope_approved\": true}",
+    "ExitCriteriaJson": "{\"allocation_approved\": true}"
+  },
+  {
+    "StepId": "STEP_EXECUTION",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "Execution",
+    "SortOrder": 2,
+    "AllowedRolesToActJson": "[\"ROLE_WORKER\", \"ROLE_TASK_LEAD\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_TASK_LEAD\"]",
+    "EntryCriteriaJson": "{\"allocation_approved\": true}",
+    "ExitCriteriaJson": "{\"work_complete\": true}"
+  },
+  {
+    "StepId": "STEP_INTERNAL_REVIEW",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "Internal Review",
+    "SortOrder": 3,
+    "AllowedRolesToActJson": "[\"ROLE_TASK_LEAD\", \"ROLE_PROJECT_MANAGER\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_TASK_LEAD\", \"ROLE_PROJECT_MANAGER\"]",
+    "EntryCriteriaJson": "{\"work_complete\": true}",
+    "ExitCriteriaJson": "{\"internal_review_passed\": true}"
+  },
+  {
+    "StepId": "STEP_QA",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "QA",
+    "SortOrder": 4,
+    "AllowedRolesToActJson": "[\"ROLE_QA_REVIEWER\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_QA_REVIEWER\"]",
+    "EntryCriteriaJson": "{\"internal_review_passed\": true}",
+    "ExitCriteriaJson": "{\"qa_passed\": true}"
+  },
+  {
+    "StepId": "STEP_DONE",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "Name": "Done",
+    "SortOrder": 5,
+    "AllowedRolesToActJson": "[]",
+    "AllowedRolesToApproveJson": "[]",
+    "EntryCriteriaJson": "{\"qa_passed\": true}",
+    "ExitCriteriaJson": "{}"
+  },
+  {
+    "StepId": "STEP_MERID_PLANNING",
+    "TenantId": "TENANT002",
+    "WorkflowDefinitionId": "WF_MERID_DEFAULT",
+    "Name": "Planning",
+    "SortOrder": 0,
+    "AllowedRolesToActJson": "[\"ROLE_MERID_PM\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_MERID_PM\"]",
+    "EntryCriteriaJson": "{}",
+    "ExitCriteriaJson": "{}"
+  },
+  {
+    "StepId": "STEP_MERID_EXECUTION",
+    "TenantId": "TENANT002",
+    "WorkflowDefinitionId": "WF_MERID_DEFAULT",
+    "Name": "Execution",
+    "SortOrder": 1,
+    "AllowedRolesToActJson": "[\"ROLE_MERID_WORKER\"]",
+    "AllowedRolesToApproveJson": "[\"ROLE_MERID_PM\"]",
+    "EntryCriteriaJson": "{}",
+    "ExitCriteriaJson": "{}"
+  },
+  {
+    "StepId": "STEP_MERID_DONE",
+    "TenantId": "TENANT002",
+    "WorkflowDefinitionId": "WF_MERID_DEFAULT",
+    "Name": "Done",
+    "SortOrder": 2,
+    "AllowedRolesToActJson": "[]",
+    "AllowedRolesToApproveJson": "[]",
+    "EntryCriteriaJson": "{}",
+    "ExitCriteriaJson": "{}"
+  }
+]

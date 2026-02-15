@@ -1,0 +1,56 @@
+[
+  {
+    "UserSkillId": "US_001",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER1",
+    "SkillId": "SKILL_001",
+    "ProficiencyLevel": "Expert",
+    "VerifiedByUserId": "USER_APEX_LEAD1",
+    "VerifiedUtc": "2025-01-20T10:00:00Z"
+  },
+  {
+    "UserSkillId": "US_002",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "SkillId": "SKILL_002",
+    "ProficiencyLevel": "Advanced",
+    "VerifiedByUserId": "USER_APEX_LEAD1",
+    "VerifiedUtc": "2025-01-20T10:00:00Z"
+  },
+  {
+    "UserSkillId": "US_003",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER3",
+    "SkillId": "SKILL_001",
+    "ProficiencyLevel": "Intermediate",
+    "VerifiedByUserId": "USER_APEX_LEAD1",
+    "VerifiedUtc": "2025-01-20T10:00:00Z"
+  },
+  {
+    "UserSkillId": "US_004",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_PM1",
+    "SkillId": "SKILL_005",
+    "ProficiencyLevel": "Expert",
+    "VerifiedByUserId": "USER_APEX_ADMIN",
+    "VerifiedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "UserSkillId": "US_005",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_LEAD1",
+    "SkillId": "SKILL_001",
+    "ProficiencyLevel": "Expert",
+    "VerifiedByUserId": "USER_APEX_PM1",
+    "VerifiedUtc": "2025-01-16T09:00:00Z"
+  },
+  {
+    "UserSkillId": "US_006",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_WORKER1",
+    "SkillId": "SKILL_006",
+    "ProficiencyLevel": "Advanced",
+    "VerifiedByUserId": "USER_MERID_PM1",
+    "VerifiedUtc": "2025-02-15T10:00:00Z"
+  }
+]

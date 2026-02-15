@@ -1,0 +1,28 @@
+[
+  {
+    "RequestId": "HCR_001",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "RequestedHoursDelta": 80,
+    "Reason": "Additional penetration testing scenarios identified during initial testing phase. Need to cover mobile device management and VPN endpoints.",
+    "State": "Pending",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-02-12T15:00:00Z",
+    "DecisionByUserId": null,
+    "DecisionUtc": null,
+    "DecisionCommentPostId": null
+  },
+  {
+    "RequestId": "HCR_002",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T5",
+    "RequestedHoursDelta": 50,
+    "Reason": "Firewall rules more complex than initially scoped due to additional compliance requirements from DOD cybersecurity framework.",
+    "State": "Approved",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-02-10T10:00:00Z",
+    "DecisionByUserId": "USER_APEX_PM1",
+    "DecisionUtc": "2026-02-11T09:00:00Z",
+    "DecisionCommentPostId": "FP_005"
+  }
+]

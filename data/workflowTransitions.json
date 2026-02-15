@@ -1,0 +1,98 @@
+[
+  {
+    "TransitionId": "TRANS_001",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_SCOPING",
+    "ToStepId": "STEP_PM_ALLOCATION",
+    "Name": "Submit for Approval",
+    "RequiresComment": false,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_TASK_LEAD\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_002",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_PM_ALLOCATION",
+    "ToStepId": "STEP_EXECUTION",
+    "Name": "Approve Allocation",
+    "RequiresComment": false,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_PROJECT_MANAGER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_003",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_PM_ALLOCATION",
+    "ToStepId": "STEP_SCOPING",
+    "Name": "Return to Scoping",
+    "RequiresComment": true,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_PROJECT_MANAGER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_004",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_EXECUTION",
+    "ToStepId": "STEP_INTERNAL_REVIEW",
+    "Name": "Submit for Review",
+    "RequiresComment": false,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_TASK_LEAD\", \"ROLE_WORKER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_005",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_INTERNAL_REVIEW",
+    "ToStepId": "STEP_QA",
+    "Name": "Pass to QA",
+    "RequiresComment": false,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_TASK_LEAD\", \"ROLE_PROJECT_MANAGER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_006",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_INTERNAL_REVIEW",
+    "ToStepId": "STEP_EXECUTION",
+    "Name": "Return to Execution",
+    "RequiresComment": true,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_TASK_LEAD\", \"ROLE_PROJECT_MANAGER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_007",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_QA",
+    "ToStepId": "STEP_DONE",
+    "Name": "Approve & Complete",
+    "RequiresComment": false,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_QA_REVIEWER\"]",
+    "ConditionJson": "{}"
+  },
+  {
+    "TransitionId": "TRANS_008",
+    "TenantId": "TENANT001",
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "FromStepId": "STEP_QA",
+    "ToStepId": "STEP_EXECUTION",
+    "Name": "Reject & Return",
+    "RequiresComment": true,
+    "RequiresAttachment": false,
+    "AllowedRolesJson": "[\"ROLE_QA_REVIEWER\"]",
+    "ConditionJson": "{}"
+  }
+]

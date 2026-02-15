@@ -1,0 +1,41 @@
+[
+  {
+    "AuditLogId": "AL_001",
+    "TenantId": "TENANT001",
+    "ActorUserId": "USER_APEX_ADMIN",
+    "EntityType": "Contract",
+    "EntityId": "CONTRACT_APEX_001",
+    "ActionType": "CREATE",
+    "TimestampUtc": "2025-01-15T10:50:00Z",
+    "OldValuesJson": null,
+    "NewValuesJson": "{\"Name\": \"DOD Cybersecurity Modernization\", \"Status\": \"Active\"}",
+    "CorrelationId": "corr_001",
+    "ClientInfoJson": "{\"ip\": \"192.168.1.100\", \"user_agent\": \"Mozilla/5.0\"}"
+  },
+  {
+    "AuditLogId": "AL_002",
+    "TenantId": "TENANT001",
+    "ActorUserId": "USER_APEX_PM1",
+    "EntityType": "TimeEntry",
+    "EntityId": "TE_001",
+    "ActionType": "CONCUR",
+    "TimestampUtc": "2026-02-15T08:00:00Z",
+    "OldValuesJson": "{\"State\": \"Pending\"}",
+    "NewValuesJson": "{\"State\": \"Concurred\", \"ConcurredByUserId\": \"USER_APEX_PM1\"}",
+    "CorrelationId": "corr_002",
+    "ClientInfoJson": "{\"ip\": \"192.168.1.101\"}"
+  },
+  {
+    "AuditLogId": "AL_003",
+    "TenantId": "TENANT001",
+    "ActorUserId": "USER_APEX_WORKER3",
+    "EntityType": "TaskNode",
+    "EntityId": "TASK_APEX_001_T5",
+    "ActionType": "UPDATE",
+    "TimestampUtc": "2026-02-13T11:00:00Z",
+    "OldValuesJson": "{\"Status\": \"InProgress\"}",
+    "NewValuesJson": "{\"Status\": \"Blocked\"}",
+    "CorrelationId": "corr_003",
+    "ClientInfoJson": "{\"ip\": \"192.168.1.103\"}"
+  }
+]

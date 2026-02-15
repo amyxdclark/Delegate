@@ -1,0 +1,26 @@
+[
+  {
+    "EventId": "WSE_001",
+    "TenantId": "TENANT001",
+    "WorkSessionId": "WS_002",
+    "EventType": "Pause",
+    "TimestampUtc": "2026-02-15T12:00:00Z",
+    "MetadataJson": "{\"reason\": \"lunch break\"}"
+  },
+  {
+    "EventId": "WSE_002",
+    "TenantId": "TENANT001",
+    "WorkSessionId": "WS_002",
+    "EventType": "Resume",
+    "TimestampUtc": "2026-02-15T13:00:00Z",
+    "MetadataJson": "{\"note\": \"back from lunch\"}"
+  },
+  {
+    "EventId": "WSE_003",
+    "TenantId": "TENANT001",
+    "WorkSessionId": "WS_002",
+    "EventType": "Pause",
+    "TimestampUtc": "2026-02-15T14:15:00Z",
+    "MetadataJson": "{\"reason\": \"team meeting\"}"
+  }
+]

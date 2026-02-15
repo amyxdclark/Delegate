@@ -1,0 +1,35 @@
+[
+  {
+    "WorkSessionId": "WS_001",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "State": "Running",
+    "StartedUtc": "2026-02-15T14:30:00Z",
+    "StoppedUtc": null,
+    "Notes": "Working on penetration testing - database layer",
+    "CreatedUtc": "2026-02-15T14:30:00Z"
+  },
+  {
+    "WorkSessionId": "WS_002",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER3",
+    "TaskNodeId": "TASK_APEX_001_T4",
+    "State": "Paused",
+    "StartedUtc": "2026-02-15T09:00:00Z",
+    "StoppedUtc": null,
+    "Notes": "Firewall installation at Site B",
+    "CreatedUtc": "2026-02-15T09:00:00Z"
+  },
+  {
+    "WorkSessionId": "WS_003",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER1",
+    "TaskNodeId": "TASK_APEX_002_T1",
+    "State": "Stopped",
+    "StartedUtc": "2026-02-10T10:00:00Z",
+    "StoppedUtc": "2026-02-10T16:00:00Z",
+    "Notes": "Completed legacy system analysis",
+    "CreatedUtc": "2026-02-10T10:00:00Z"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "TaskRequiredSkillId": "TRS_001",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "SkillId": "SKILL_002",
+    "MinimumLevel": "Advanced"
+  },
+  {
+    "TaskRequiredSkillId": "TRS_002",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T4",
+    "SkillId": "SKILL_001",
+    "MinimumLevel": "Intermediate"
+  },
+  {
+    "TaskRequiredSkillId": "TRS_003",
+    "TenantId": "TENANT002",
+    "TaskNodeId": "TASK_MERID_001_T1",
+    "SkillId": "SKILL_006",
+    "MinimumLevel": "Advanced"
+  }
+]

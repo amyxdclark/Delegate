@@ -1,0 +1,22 @@
+[
+  {
+    "TenantId": "TENANT001",
+    "LogoStorageKey": "tenants/tenant001/logo.png",
+    "ThemeName": "Federal Blue",
+    "PrimaryColor": "#1e3a8a",
+    "SecondaryColor": "#3b82f6",
+    "ReportHeaderHtml": "<div style='text-align: center;'><h1>Apex Federal Services</h1><p>Excellence in Federal Contracting</p></div>",
+    "ReportFooterHtml": "<div style='text-align: center; font-size: 10px;'>Confidential - For Official Use Only</div>",
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "TenantId": "TENANT002",
+    "LogoStorageKey": "tenants/tenant002/logo.png",
+    "ThemeName": "GovTech Green",
+    "PrimaryColor": "#065f46",
+    "SecondaryColor": "#10b981",
+    "ReportHeaderHtml": "<div style='text-align: center;'><h1>Meridian GovTech</h1></div>",
+    "ReportFooterHtml": "<div style='text-align: center; font-size: 10px;'>Proprietary and Confidential</div>",
+    "UpdatedUtc": "2025-02-01T09:00:00Z"
+  }
+]

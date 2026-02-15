@@ -1,0 +1,42 @@
+[
+  {
+    "ChatParticipantId": "CP_001",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "UserId": "USER_APEX_WORKER2",
+    "Role": "Member",
+    "JoinedUtc": "2026-01-16T08:20:00Z"
+  },
+  {
+    "ChatParticipantId": "CP_002",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "UserId": "USER_APEX_WORKER3",
+    "Role": "Member",
+    "JoinedUtc": "2026-01-16T08:20:00Z"
+  },
+  {
+    "ChatParticipantId": "CP_003",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "UserId": "USER_APEX_LEAD1",
+    "Role": "Admin",
+    "JoinedUtc": "2026-01-16T08:20:00Z"
+  },
+  {
+    "ChatParticipantId": "CP_004",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_002",
+    "UserId": "USER_APEX_PM1",
+    "Role": "Member",
+    "JoinedUtc": "2026-01-20T10:00:00Z"
+  },
+  {
+    "ChatParticipantId": "CP_005",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_002",
+    "UserId": "USER_APEX_LEAD1",
+    "Role": "Member",
+    "JoinedUtc": "2026-01-20T10:00:00Z"
+  }
+]

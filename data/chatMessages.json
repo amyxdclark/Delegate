@@ -1,0 +1,52 @@
+[
+  {
+    "MessageId": "CM_001",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "SenderUserId": "USER_APEX_LEAD1",
+    "BodyMarkdown": "Team, let's coordinate on the penetration testing timeline. Emily and Alex, please sync up on your approaches.",
+    "CreatedUtc": "2026-01-16T09:00:00Z",
+    "EditedUtc": null,
+    "Visibility": "ContractorOnly"
+  },
+  {
+    "MessageId": "CM_002",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "SenderUserId": "USER_APEX_WORKER2",
+    "BodyMarkdown": "Sounds good! I'll focus on the network layer first, then move to applications.",
+    "CreatedUtc": "2026-01-16T09:15:00Z",
+    "EditedUtc": null,
+    "Visibility": "ContractorOnly"
+  },
+  {
+    "MessageId": "CM_003",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_001",
+    "SenderUserId": "USER_APEX_WORKER3",
+    "BodyMarkdown": "I can help with the database security testing once the network layer is done.",
+    "CreatedUtc": "2026-01-16T09:20:00Z",
+    "EditedUtc": null,
+    "Visibility": "ContractorOnly"
+  },
+  {
+    "MessageId": "CM_004",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_002",
+    "SenderUserId": "USER_APEX_PM1",
+    "BodyMarkdown": "Jennifer, can you give me a quick status update on the security assessment?",
+    "CreatedUtc": "2026-01-20T10:05:00Z",
+    "EditedUtc": null,
+    "Visibility": "ContractorOnly"
+  },
+  {
+    "MessageId": "CM_005",
+    "TenantId": "TENANT001",
+    "ChatThreadId": "CT_002",
+    "SenderUserId": "USER_APEX_LEAD1",
+    "BodyMarkdown": "Going well! Initial scan completed, penetration testing is in progress. On track for the Feb 20 milestone.",
+    "CreatedUtc": "2026-01-20T10:10:00Z",
+    "EditedUtc": null,
+    "Visibility": "ContractorOnly"
+  }
+]

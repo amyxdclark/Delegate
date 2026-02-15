@@ -1,0 +1,20 @@
+[
+  {
+    "WorkflowDefinitionId": "WF_DEFAULT",
+    "TenantId": "TENANT001",
+    "Name": "Default Task Workflow",
+    "Description": "Standard workflow: Scoping → PM Allocation Approval → Execution → Internal Review → QA → Done",
+    "Version": 1,
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "WorkflowDefinitionId": "WF_MERID_DEFAULT",
+    "TenantId": "TENANT002",
+    "Name": "Default Task Workflow",
+    "Description": "Standard workflow for Meridian",
+    "Version": 1,
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T10:00:00Z"
+  }
+]

@@ -1,0 +1,28 @@
+[
+  {
+    "ApprovalRequirementId": "AR_001",
+    "TenantId": "TENANT001",
+    "ScopeType": "TaskNode",
+    "ScopeId": "TASK_APEX_001_T2",
+    "RequiredPartyType": "Government",
+    "RequiredRole": "ROLE_GOV_APPROVER",
+    "MinApprovals": 1,
+    "State": "Pending",
+    "DueUtc": "2026-02-20T17:00:00Z",
+    "CreatedByUserId": "USER_APEX_PM1",
+    "CreatedUtc": "2026-02-10T10:00:00Z"
+  },
+  {
+    "ApprovalRequirementId": "AR_002",
+    "TenantId": "TENANT001",
+    "ScopeType": "Contract",
+    "ScopeId": "CONTRACT_APEX_001",
+    "RequiredPartyType": "Government",
+    "RequiredRole": "ROLE_COR",
+    "MinApprovals": 1,
+    "State": "Approved",
+    "DueUtc": "2026-01-31T17:00:00Z",
+    "CreatedByUserId": "USER_APEX_ADMIN",
+    "CreatedUtc": "2026-01-15T11:00:00Z"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "HistoryId": "TWH_001",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T1",
+    "FromStepId": "STEP_SCOPING",
+    "ToStepId": "STEP_PM_ALLOCATION",
+    "TransitionId": "TRANS_001",
+    "ActorUserId": "USER_APEX_LEAD1",
+    "TimestampUtc": "2025-01-18T10:00:00Z",
+    "CommentPostId": null,
+    "MetadataJson": "{\"action\": \"submitted_for_approval\"}"
+  },
+  {
+    "HistoryId": "TWH_002",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T1",
+    "FromStepId": "STEP_PM_ALLOCATION",
+    "ToStepId": "STEP_EXECUTION",
+    "TransitionId": "TRANS_002",
+    "ActorUserId": "USER_APEX_PM1",
+    "TimestampUtc": "2025-01-19T09:00:00Z",
+    "CommentPostId": null,
+    "MetadataJson": "{\"action\": \"allocation_approved\"}"
+  },
+  {
+    "HistoryId": "TWH_003",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T1",
+    "FromStepId": "STEP_EXECUTION",
+    "ToStepId": "STEP_INTERNAL_REVIEW",
+    "TransitionId": "TRANS_004",
+    "ActorUserId": "USER_APEX_WORKER1",
+    "TimestampUtc": "2025-01-28T16:00:00Z",
+    "CommentPostId": null,
+    "MetadataJson": "{\"action\": \"work_completed\"}"
+  },
+  {
+    "HistoryId": "TWH_004",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T1",
+    "FromStepId": "STEP_INTERNAL_REVIEW",
+    "ToStepId": "STEP_QA",
+    "TransitionId": "TRANS_005",
+    "ActorUserId": "USER_APEX_LEAD1",
+    "TimestampUtc": "2025-01-30T10:00:00Z",
+    "CommentPostId": null,
+    "MetadataJson": "{\"action\": \"passed_review\"}"
+  },
+  {
+    "HistoryId": "TWH_005",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T1",
+    "FromStepId": "STEP_QA",
+    "ToStepId": "STEP_DONE",
+    "TransitionId": "TRANS_007",
+    "ActorUserId": "USER_APEX_QA1",
+    "TimestampUtc": "2025-02-01T15:30:00Z",
+    "CommentPostId": null,
+    "MetadataJson": "{\"action\": \"qa_approved\"}"
+  }
+]

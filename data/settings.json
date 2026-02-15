@@ -1,0 +1,50 @@
+[
+  {
+    "SettingId": "SETTING_APEX_TIMEZONE",
+    "TenantId": "TENANT001",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "Key": "default_timezone",
+    "ValueType": "string",
+    "Value": "America/New_York",
+    "IsLockedByAppOwner": false,
+    "UpdatedByUserId": "USER_APEX_ADMIN",
+    "UpdatedUtc": "2025-01-15T10:15:00Z"
+  },
+  {
+    "SettingId": "SETTING_APEX_WORK_HOURS",
+    "TenantId": "TENANT001",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "Key": "standard_work_hours_per_day",
+    "ValueType": "number",
+    "Value": "8",
+    "IsLockedByAppOwner": false,
+    "UpdatedByUserId": "USER_APEX_ADMIN",
+    "UpdatedUtc": "2025-01-15T10:15:00Z"
+  },
+  {
+    "SettingId": "SETTING_APEX_TIME_APPROVAL",
+    "TenantId": "TENANT001",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "Key": "require_time_approval",
+    "ValueType": "boolean",
+    "Value": "true",
+    "IsLockedByAppOwner": false,
+    "UpdatedByUserId": "USER_APEX_ADMIN",
+    "UpdatedUtc": "2025-01-15T10:15:00Z"
+  },
+  {
+    "SettingId": "SETTING_MERID_TIMEZONE",
+    "TenantId": "TENANT002",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "Key": "default_timezone",
+    "ValueType": "string",
+    "Value": "America/Chicago",
+    "IsLockedByAppOwner": false,
+    "UpdatedByUserId": "USER_MERID_ADMIN",
+    "UpdatedUtc": "2025-02-01T08:45:00Z"
+  }
+]

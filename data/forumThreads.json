@@ -1,0 +1,50 @@
+[
+  {
+    "ThreadId": "FT_001",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "Title": "Penetration Testing Approach",
+    "ThreadType": "General",
+    "Visibility": "ContractorOnly",
+    "IsPinned": false,
+    "IsLocked": false,
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-01-16T10:00:00Z"
+  },
+  {
+    "ThreadId": "FT_002",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_T5",
+    "Title": "Firewall Configuration Blocker",
+    "ThreadType": "Issue",
+    "Visibility": "SharedWithGovernment",
+    "IsPinned": true,
+    "IsLocked": false,
+    "CreatedByUserId": "USER_APEX_WORKER3",
+    "CreatedUtc": "2026-02-13T11:00:00Z"
+  },
+  {
+    "ThreadId": "FT_003",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_001_AREA1",
+    "Title": "Security Assessment Milestone Review",
+    "ThreadType": "Decision",
+    "Visibility": "SharedWithGovernment",
+    "IsPinned": true,
+    "IsLocked": false,
+    "CreatedByUserId": "USER_APEX_PM1",
+    "CreatedUtc": "2026-02-01T14:00:00Z"
+  },
+  {
+    "ThreadId": "FT_004",
+    "TenantId": "TENANT001",
+    "TaskNodeId": "TASK_APEX_002_T2",
+    "Title": "Migration Strategy Discussion",
+    "ThreadType": "General",
+    "Visibility": "ContractorOnly",
+    "IsPinned": false,
+    "IsLocked": false,
+    "CreatedByUserId": "USER_APEX_WORKER2",
+    "CreatedUtc": "2026-02-14T10:00:00Z"
+  }
+]

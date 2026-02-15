@@ -1,170 +1,243 @@
-import { clampText, fmtDate } from "./utils.js";
+import { clampText, fmtDate, fmtDateTime, fmtHours } from "./utils.js";
+import { filterByTenant, getUnreadNotifications } from "./state.js";
 
-export function appShell(){
+export function renderLoginScreen(state){
+  const tenants = state.tenants || [];
+  
   return `
-  <div class="flex flex-col min-h-screen">
-    <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-      <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
-        <img src="./assets/icons/icon-192.png" alt="Delegate" class="w-10 h-10 rounded-xl shadow" />
-        <div class="flex-1">
-          <div class="text-lg font-semibold leading-tight">Delegate</div>
-          <div class="text-xs text-slate-400 -mt-0.5">Projects • Roles • Workflow • PWA</div>
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div class="w-full max-w-md p-8 border border-slate-800 rounded-2xl bg-slate-950/90 shadow-2xl">
+        <div class="text-center mb-8">
+          <div class="text-3xl font-bold mb-2">Delegate</div>
+          <div class="text-sm text-slate-400">Multi-Tenant Contract Execution Platform</div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnNewProject" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">New Project</button>
-          <button id="btnNewTask" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-sm">New Task</button>
-          <button id="btnData" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Data</button>
+        
+        <div class="space-y-4">
+          <label class="block">
+            <div class="text-sm text-slate-300 mb-2">Select Tenant</div>
+            <select id="loginTenantSelect" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+              ${tenants.map(t => `<option value="${t.TenantId}">${escapeHtml(t.Name)}</option>`).join('')}
+            </select>
+          </label>
+          
+          <label class="block">
+            <div class="text-sm text-slate-300 mb-2">Select User</div>
+            <select id="loginUserSelect" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+            </select>
+          </label>
+          
+          <button id="btnLogin" class="w-full px-4 py-3 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold transition">
+            Log In
+          </button>
+        </div>
+        
+        <div class="mt-6 text-xs text-slate-500 text-center">
+          Demo login - select any user to enter the platform
         </div>
       </div>
-    </header>
+    </div>
+  `;
+}
 
-    <main class="flex-1 mx-auto max-w-7xl w-full px-4 py-4">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <aside class="lg:col-span-3 border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
-          <div class="p-3 border-b border-slate-800 flex items-center justify-between">
-            <div class="font-semibold">Projects</div>
-            <div id="pwaBadge" class="text-xs text-slate-400"></div>
+export function appShell(state, currentUser){
+  const user = state.users.find(u => u.UserId === currentUser.userId);
+  const tenant = state.tenants.find(t => t.TenantId === currentUser.tenantId);
+  const unreadCount = getUnreadNotifications(state, currentUser.userId).length;
+  
+  return `
+    <div class="flex flex-col min-h-screen">
+      <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+        <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+          <img src="./assets/icons/icon-192.png" alt="Delegate" class="w-10 h-10 rounded-xl shadow" />
+          <div class="flex-1">
+            <div class="text-lg font-semibold leading-tight">Delegate</div>
+            <div class="text-xs text-slate-400 -mt-0.5">${escapeHtml(tenant?.Name || 'Platform')}</div>
           </div>
-          <div id="projectList" class="p-2"></div>
-
-          <div class="p-3 border-t border-slate-800">
-            <div class="text-xs text-slate-400">
-              Seed JSON loads from <code class="text-slate-200">/data/seed.json</code> and your edits save to <code class="text-slate-200">localStorage</code>.
+          
+          <div class="flex items-center gap-3">
+            ${unreadCount > 0 ? `
+              <button class="relative px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">
+                <span class="text-sm">🔔</span>
+                <span class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-600 rounded-full">${unreadCount}</span>
+              </button>
+            ` : ''}
+            
+            <div class="text-sm">
+              <div class="font-medium">${escapeHtml(user?.DisplayName || 'User')}</div>
+              <div class="text-xs text-slate-400">${escapeHtml(user?.PartyType || '')}</div>
             </div>
-          </div>
-        </aside>
-
-        <section class="lg:col-span-9 space-y-4">
-          <div id="projectHeader" class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden"></div>
-          <div id="board" class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden"></div>
-        </section>
-      </div>
-    </main>
-
-    <footer class="border-t border-slate-800 bg-slate-950/50">
-      <div class="mx-auto max-w-7xl px-4 py-3 text-xs text-slate-400 flex flex-wrap gap-3 items-center justify-between">
-        <div>Offline-ready PWA • GitHub Pages friendly</div>
-        <div class="flex gap-2">
-          <a class="underline hover:text-slate-200" href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
-          <span>•</span>
-          <button id="btnAbout" class="underline hover:text-slate-200">About</button>
-        </div>
-      </div>
-    </footer>
-
-    <div id="modalRoot"></div>
-  </div>
-  `;
-}
-
-export function renderProjectList(state, activeProjectId){
-  const items = state.projects.map(p => {
-    const isActive = p.id === activeProjectId;
-    return `
-      <button data-project="${p.id}" class="w-full text-left px-3 py-2 rounded-xl ${isActive ? "bg-slate-800" : "hover:bg-slate-800/60"}">
-        <div class="font-medium">${escapeHtml(p.name)}</div>
-        <div class="text-xs text-slate-400">${escapeHtml(p.category || "")}</div>
-      </button>
-    `;
-  }).join("");
-
-  return items || `<div class="p-4 text-sm text-slate-400">No projects yet. Click <b>New Project</b>.</div>`;
-}
-
-export function renderProjectHeader(project){
-  if(!project) return `<div class="p-4 text-slate-400">Select a project.</div>`;
-  return `
-    <div class="p-4">
-      <div class="flex flex-wrap gap-3 items-start justify-between">
-        <div>
-          <div class="text-xl font-semibold">${escapeHtml(project.name)}</div>
-          <div class="text-sm text-slate-400">${escapeHtml(project.description || "")}</div>
-          <div class="mt-2 text-xs text-slate-400 flex flex-wrap gap-2">
-            <span class="px-2 py-1 rounded-lg bg-slate-800/70 border border-slate-700">Start: ${escapeHtml(fmtDate(project.startDate))}</span>
-            <span class="px-2 py-1 rounded-lg bg-slate-800/70 border border-slate-700">End: ${escapeHtml(fmtDate(project.absoluteEndDate))}</span>
-            <span class="px-2 py-1 rounded-lg bg-slate-800/70 border border-slate-700">Category: ${escapeHtml(project.category || "")}</span>
+            
+            <button id="btnData" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Data</button>
+            <button id="btnLogout" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Logout</button>
+            <div id="pwaBadge" class="px-2 py-1 rounded-lg bg-slate-800 text-xs"></div>
           </div>
         </div>
-        <div class="flex gap-2">
-          <button id="btnEditProject" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Edit</button>
-          <button id="btnManageUsers" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Users</button>
+      </header>
+
+      <main id="mainContent" class="flex-1">
+        <!-- Content rendered here -->
+      </main>
+
+      <footer class="border-t border-slate-800 bg-slate-950/50">
+        <div class="mx-auto max-w-7xl px-4 py-3 text-xs text-slate-400 text-center">
+          Delegate Multi-Tenant Platform • Offline-ready PWA • GitHub Pages friendly
+        </div>
+      </footer>
+
+      <div id="modalRoot"></div>
+    </div>
+  `;
+}
+
+export function renderDashboard(state, currentUser){
+  const user = state.users.find(u => u.UserId === currentUser.userId);
+  const tenant = state.tenants.find(t => t.TenantId === currentUser.tenantId);
+  
+  // Get user's contracts
+  const userContracts = filterByTenant(state.contracts, currentUser.tenantId) || [];
+  
+  // Get user's task assignments
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  
+  // Get assigned tasks
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const assignedTasks = (state.taskNodes || []).filter(tn => 
+    assignedTaskIds.includes(tn.TaskNodeId) && tn.Status !== 'Done'
+  );
+  
+  // Get pending time entries (if PM)
+  const pendingTimeEntries = user?.PartyType === 'Contractor' 
+    ? (state.timeEntries || []).filter(te => te.State === 'Pending' && te.TenantId === currentUser.tenantId)
+    : [];
+  
+  // Get active work sessions
+  const activeWorkSessions = (state.workSessions || []).filter(ws => 
+    ws.UserId === currentUser.userId && ws.State === 'Running'
+  );
+  
+  // Get recent notifications
+  const recentNotifications = (state.notifications || [])
+    .filter(n => n.UserId === currentUser.userId)
+    .sort((a, b) => new Date(b.CreatedUtc) - new Date(a.CreatedUtc))
+    .slice(0, 5);
+  
+  return `
+    <div class="mx-auto max-w-7xl px-4 py-6">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold mb-2">Dashboard</h1>
+        <p class="text-slate-400">Welcome back, ${escapeHtml(user?.DisplayName || 'User')}</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40">
+          <div class="text-sm text-slate-400 mb-1">Active Contracts</div>
+          <div class="text-2xl font-bold">${userContracts.filter(c => c.Status === 'Active').length}</div>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40">
+          <div class="text-sm text-slate-400 mb-1">My Tasks</div>
+          <div class="text-2xl font-bold">${assignedTasks.length}</div>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40">
+          <div class="text-sm text-slate-400 mb-1">Pending Time Entries</div>
+          <div class="text-2xl font-bold">${pendingTimeEntries.length}</div>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/40">
+          <div class="text-sm text-slate-400 mb-1">Active Timers</div>
+          <div class="text-2xl font-bold">${activeWorkSessions.length}</div>
         </div>
       </div>
-      <div class="mt-4 text-xs text-slate-400">
-        Drag tasks across steps to represent role handoffs and workflow movement.
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- My Contracts -->
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
+          <div class="p-4 border-b border-slate-800">
+            <div class="font-semibold">My Contracts</div>
+          </div>
+          <div class="p-4">
+            ${userContracts.length === 0 
+              ? '<div class="text-sm text-slate-400">No contracts assigned</div>'
+              : userContracts.map(c => `
+                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div class="font-medium">${escapeHtml(c.Name)}</div>
+                  <div class="text-xs text-slate-400 mt-1">${escapeHtml(c.CustomerName)}</div>
+                  <div class="text-xs text-slate-500 mt-1">
+                    ${fmtDate(c.PopStartDate)} - ${fmtDate(c.PopEndDate)}
+                  </div>
+                  <div class="mt-2">
+                    <span class="px-2 py-1 rounded-lg text-xs ${c.Status === 'Active' ? 'bg-emerald-900 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
+                      ${c.Status}
+                    </span>
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+        
+        <!-- My Tasks -->
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
+          <div class="p-4 border-b border-slate-800">
+            <div class="font-semibold">My Active Tasks</div>
+          </div>
+          <div class="p-4">
+            ${assignedTasks.length === 0
+              ? '<div class="text-sm text-slate-400">No active tasks</div>'
+              : assignedTasks.slice(0, 5).map(t => `
+                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div class="font-medium text-sm">${escapeHtml(t.Title)}</div>
+                  <div class="text-xs text-slate-400 mt-1">${escapeHtml(clampText(t.Description, 80))}</div>
+                  <div class="mt-2">
+                    <span class="px-2 py-1 rounded-lg text-xs ${statusColor(t.Status)}">
+                      ${t.Status}
+                    </span>
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+        
+        <!-- Recent Notifications -->
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden lg:col-span-2">
+          <div class="p-4 border-b border-slate-800">
+            <div class="font-semibold">Recent Notifications</div>
+          </div>
+          <div class="p-4">
+            ${recentNotifications.length === 0
+              ? '<div class="text-sm text-slate-400">No notifications</div>'
+              : recentNotifications.map(n => `
+                <div class="mb-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800 ${n.IsRead ? 'opacity-60' : ''}">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${escapeHtml(n.Title)}</div>
+                      <div class="text-xs text-slate-400 mt-1">${escapeHtml(n.Body)}</div>
+                      <div class="text-xs text-slate-500 mt-1">${fmtDateTime(n.CreatedUtc)}</div>
+                    </div>
+                    ${!n.IsRead ? '<div class="w-2 h-2 rounded-full bg-cyan-500"></div>' : ''}
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
       </div>
     </div>
   `;
 }
 
-export function renderBoard(state, project){
-  if(!project) return `<div class="p-4 text-slate-400">Pick a project to see its workflow.</div>`;
-
-  const steps = project.steps || [];
-  const tasks = state.tasks.filter(t => t.projectId === project.id);
-
-  const cols = steps.map(step => {
-    const stepTasks = tasks.filter(t => t.statusStepId === step.id);
-    return `
-      <div class="min-w-[18rem] w-[18rem] shrink-0">
-        <div class="p-3 border-b border-slate-800 flex items-center justify-between">
-          <div class="font-semibold">${escapeHtml(step.name)}</div>
-          <div class="text-xs text-slate-400">${stepTasks.length}</div>
-        </div>
-        <div class="p-3 space-y-2 min-h-[12rem]" data-dropzone="${step.id}">
-          ${stepTasks.map(t => taskCard(state, t)).join("") || `<div class="text-xs text-slate-500">Drop tasks here</div>`}
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  return `
-    <div class="p-3 border-b border-slate-800 flex items-center justify-between">
-      <div class="font-semibold">Workflow Board</div>
-      <div class="text-xs text-slate-400">Drag & drop enabled</div>
-    </div>
-    <div class="p-3 overflow-x-auto">
-      <div class="flex gap-3">
-        ${cols}
-      </div>
-    </div>
-  `;
-}
-
-function taskCard(state, t){
-  const assignees = (t.assigneeUserIds || []).map(id => state.users.find(u => u.id === id)?.name).filter(Boolean);
-  const due = t.dueDate ? `<span class="px-2 py-0.5 rounded-lg bg-slate-800/70 border border-slate-700">Due: ${escapeHtml(fmtDate(t.dueDate))}</span>` : "";
-  const pri = t.priority ? `<span class="px-2 py-0.5 rounded-lg bg-slate-800/70 border border-slate-700">Pri: ${escapeHtml(t.priority)}</span>` : "";
-  return `
-    <div draggable="true" data-task="${t.id}"
-      class="group cursor-grab active:cursor-grabbing p-3 rounded-2xl border border-slate-800 bg-slate-950/40 hover:bg-slate-950/70 shadow-sm">
-      <div class="flex items-start justify-between gap-2">
-        <div class="font-medium leading-snug">${escapeHtml(t.title)}</div>
-        <button data-task-open="${t.id}" class="opacity-0 group-hover:opacity-100 transition text-xs text-slate-300 hover:text-white underline">Open</button>
-      </div>
-      <div class="text-xs text-slate-400 mt-1">${escapeHtml(clampText(t.description, 120))}</div>
-      <div class="mt-2 flex flex-wrap gap-1 text-[11px] text-slate-300">
-        ${pri}${due}
-        ${assignees.length ? `<span class="px-2 py-0.5 rounded-lg bg-slate-800/70 border border-slate-700">${escapeHtml(assignees.join(", "))}</span>` : ""}
-      </div>
-    </div>
-  `;
-}
-
-export function modal(title, bodyHtml, footerHtml){
-  return `
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/70" data-close="1"></div>
-    <div class="relative w-full max-w-2xl border border-slate-800 rounded-2xl bg-slate-950 shadow-xl overflow-hidden">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="font-semibold">${escapeHtml(title)}</div>
-        <button class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm" data-close="1">✕</button>
-      </div>
-      <div class="p-4">${bodyHtml}</div>
-      <div class="p-4 border-t border-slate-800 flex flex-wrap gap-2 justify-end">${footerHtml || ""}</div>
-    </div>
-  </div>
-  `;
+function statusColor(status){
+  const colors = {
+    'NotStarted': 'bg-slate-800 text-slate-400',
+    'InProgress': 'bg-cyan-900 text-cyan-300',
+    'Blocked': 'bg-rose-900 text-rose-300',
+    'Done': 'bg-emerald-900 text-emerald-300'
+  };
+  return colors[status] || 'bg-slate-800 text-slate-400';
 }
 
 export function escapeHtml(str){

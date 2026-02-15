@@ -1,0 +1,146 @@
+[
+  {
+    "UserId": "USER_PLATFORM_ADMIN",
+    "TenantId": "PLATFORM",
+    "PartyType": "Contractor",
+    "DisplayName": "Platform Admin",
+    "Email": "admin@delegate-platform.com",
+    "IsActive": true,
+    "CreatedUtc": "2024-12-01T00:00:00Z"
+  },
+  {
+    "UserId": "USER_APEX_ADMIN",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Sarah Chen",
+    "Email": "sarah.chen@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:15:00Z"
+  },
+  {
+    "UserId": "USER_APEX_PM1",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Marcus Thompson",
+    "Email": "marcus.thompson@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:20:00Z"
+  },
+  {
+    "UserId": "USER_APEX_LEAD1",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Jennifer Rodriguez",
+    "Email": "jennifer.rodriguez@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:25:00Z"
+  },
+  {
+    "UserId": "USER_APEX_WORKER1",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "David Kim",
+    "Email": "david.kim@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:30:00Z"
+  },
+  {
+    "UserId": "USER_APEX_WORKER2",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Emily Watson",
+    "Email": "emily.watson@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:35:00Z"
+  },
+  {
+    "UserId": "USER_APEX_WORKER3",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Alex Patel",
+    "Email": "alex.patel@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:40:00Z"
+  },
+  {
+    "UserId": "USER_APEX_QA1",
+    "TenantId": "TENANT001",
+    "PartyType": "Contractor",
+    "DisplayName": "Rachel Green",
+    "Email": "rachel.green@apexfederal.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:45:00Z"
+  },
+  {
+    "UserId": "USER_APEX_GOV1",
+    "TenantId": "TENANT001",
+    "PartyType": "Government",
+    "DisplayName": "Col. James Morrison",
+    "Email": "james.morrison@dod.gov",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:00:00Z"
+  },
+  {
+    "UserId": "USER_APEX_GOV2",
+    "TenantId": "TENANT001",
+    "PartyType": "Government",
+    "DisplayName": "Linda Martinez",
+    "Email": "linda.martinez@va.gov",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:15:00Z"
+  },
+  {
+    "UserId": "USER_APEX_GOV3",
+    "TenantId": "TENANT001",
+    "PartyType": "Government",
+    "DisplayName": "Robert Singh",
+    "Email": "robert.singh@dhs.gov",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:30:00Z"
+  },
+  {
+    "UserId": "USER_MERID_ADMIN",
+    "TenantId": "TENANT002",
+    "PartyType": "Contractor",
+    "DisplayName": "Michael Brooks",
+    "Email": "michael.brooks@meridiangovtech.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T08:45:00Z"
+  },
+  {
+    "UserId": "USER_MERID_PM1",
+    "TenantId": "TENANT002",
+    "PartyType": "Contractor",
+    "DisplayName": "Patricia Lee",
+    "Email": "patricia.lee@meridiangovtech.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:00:00Z"
+  },
+  {
+    "UserId": "USER_MERID_WORKER1",
+    "TenantId": "TENANT002",
+    "PartyType": "Contractor",
+    "DisplayName": "Daniel Foster",
+    "Email": "daniel.foster@meridiangovtech.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:15:00Z"
+  },
+  {
+    "UserId": "USER_MERID_WORKER2",
+    "TenantId": "TENANT002",
+    "PartyType": "Contractor",
+    "DisplayName": "Sophia Miller",
+    "Email": "sophia.miller@meridiangovtech.com",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:30:00Z"
+  },
+  {
+    "UserId": "USER_MERID_GOV1",
+    "TenantId": "TENANT002",
+    "PartyType": "Government",
+    "DisplayName": "Thomas Anderson",
+    "Email": "thomas.anderson@gsa.gov",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T10:00:00Z"
+  }
+]

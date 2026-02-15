@@ -1,170 +1,57 @@
 {
-  "version": 1,
+  "version": 2,
   "meta": {
     "app": "Delegate",
-    "createdUtc": "2026-02-15T19:06:29.089941Z"
+    "description": "Multi-tenant contract execution platform",
+    "createdUtc": "2026-02-15T19:22:00Z"
   },
-  "users": [
-    {
-      "id": "u_pm",
-      "name": "Project Manager",
-      "email": "pm@example.com",
-      "role": "Project Manager"
-    },
-    {
-      "id": "u_planner",
-      "name": "Planner",
-      "email": "planner@example.com",
-      "role": "Planner"
-    },
-    {
-      "id": "u_qa",
-      "name": "QA Reviewer",
-      "email": "qa@example.com",
-      "role": "QA"
-    },
-    {
-      "id": "u_worker1",
-      "name": "Worker One",
-      "email": "worker1@example.com",
-      "role": "Worker"
-    },
-    {
-      "id": "u_worker2",
-      "name": "Worker Two",
-      "email": "worker2@example.com",
-      "role": "Worker"
-    }
-  ],
-  "roles": [
-    {
-      "id": "r_planner",
-      "name": "Planner"
-    },
-    {
-      "id": "r_pm",
-      "name": "Project Manager"
-    },
-    {
-      "id": "r_step1",
-      "name": "Step 1 Owner"
-    },
-    {
-      "id": "r_qa",
-      "name": "QA Reviewer"
-    },
-    {
-      "id": "r_vendor",
-      "name": "Vendor"
-    },
-    {
-      "id": "r_stakeholder",
-      "name": "Stakeholder"
-    }
-  ],
-  "projects": [
-    {
-      "id": "p_demo",
-      "name": "Demo Project",
-      "category": "Internal",
-      "startDate": "2026-02-15",
-      "absoluteEndDate": "2026-05-30",
-      "description": "A sample project showing custom workflow steps, tasks, and role handoffs.",
-      "steps": [
-        {
-          "id": "s_intake",
-          "name": "Intake",
-          "color": "slate"
-        },
-        {
-          "id": "s_planning",
-          "name": "Planning",
-          "color": "indigo"
-        },
-        {
-          "id": "s_pm_approval",
-          "name": "PM Approval",
-          "color": "amber"
-        },
-        {
-          "id": "s_step1",
-          "name": "Step 1",
-          "color": "cyan"
-        },
-        {
-          "id": "s_qa",
-          "name": "QA",
-          "color": "fuchsia"
-        },
-        {
-          "id": "s_done",
-          "name": "Done",
-          "color": "emerald"
-        }
-      ],
-      "subprojects": [
-        {
-          "id": "sp_docs",
-          "name": "Docs Subproject",
-          "description": "Collect docs/attachments, confirm scope."
-        }
-      ],
-      "attachments": [
-        {
-          "id": "a_1",
-          "name": "Project Charter.pdf",
-          "note": "(placeholder) add attachments in your real system"
-        }
-      ]
-    }
-  ],
-  "tasks": [
-    {
-      "id": "t1",
-      "projectId": "p_demo",
-      "title": "Create initial plan",
-      "description": "Define milestones, deliverables, and role handoffs.",
-      "statusStepId": "s_planning",
-      "priority": "High",
-      "assigneeUserIds": [
-        "u_planner"
-      ],
-      "dueDate": "2026-02-25",
-      "tags": [
-        "planning",
-        "docs"
-      ]
-    },
-    {
-      "id": "t2",
-      "projectId": "p_demo",
-      "title": "PM approval on plan",
-      "description": "Review plan and approve or send back for revision.",
-      "statusStepId": "s_pm_approval",
-      "priority": "Medium",
-      "assigneeUserIds": [
-        "u_pm"
-      ],
-      "dueDate": "2026-02-28",
-      "tags": [
-        "approval"
-      ]
-    },
-    {
-      "id": "t3",
-      "projectId": "p_demo",
-      "title": "Implement Step 1 work",
-      "description": "Execute the first work package.",
-      "statusStepId": "s_step1",
-      "priority": "Medium",
-      "assigneeUserIds": [
-        "u_worker1",
-        "u_worker2"
-      ],
-      "dueDate": "2026-03-10",
-      "tags": [
-        "delivery"
-      ]
-    }
+  "dataFiles": [
+    "tenants.json",
+    "users.json",
+    "roles.json",
+    "userRoles.json",
+    "userSessions.json",
+    "featureFlags.json",
+    "tenantFeatureFlags.json",
+    "settings.json",
+    "tenantBranding.json",
+    "contracts.json",
+    "taskNodes.json",
+    "taskAssignments.json",
+    "contractStakeholders.json",
+    "workSessions.json",
+    "workSessionEvents.json",
+    "timeEntries.json",
+    "hoursChangeRequests.json",
+    "forumThreads.json",
+    "forumPosts.json",
+    "forumAttachments.json",
+    "workflowDefinitions.json",
+    "workflowSteps.json",
+    "workflowTransitions.json",
+    "taskWorkflowInstances.json",
+    "taskWorkflowHistory.json",
+    "approvalRequirements.json",
+    "approvalDecisions.json",
+    "notifications.json",
+    "notificationPreferences.json",
+    "emailOutbox.json",
+    "emailDeliveryLog.json",
+    "deadlines.json",
+    "deadlineReminders.json",
+    "calendarSubscriptions.json",
+    "chatThreads.json",
+    "chatParticipants.json",
+    "chatMessages.json",
+    "meetings.json",
+    "meetingAttendees.json",
+    "aiPolicy.json",
+    "aiConversations.json",
+    "aiMessages.json",
+    "skills.json",
+    "userSkills.json",
+    "taskRequiredSkills.json",
+    "ptoEntries.json",
+    "auditLogs.json"
   ]
 }

@@ -1,0 +1,50 @@
+[
+  {
+    "NotificationId": "NOTIF_001",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_PM1",
+    "Type": "TimeEntrySubmitted",
+    "Title": "New time entry awaiting concurrence",
+    "Body": "Emily Watson submitted a time entry for Penetration Testing",
+    "LinkEntityType": "TimeEntry",
+    "LinkEntityId": "TE_002",
+    "IsRead": false,
+    "CreatedUtc": "2026-02-14T17:00:00Z"
+  },
+  {
+    "NotificationId": "NOTIF_002",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_LEAD1",
+    "Type": "TaskBlocked",
+    "Title": "Task blocked: Firewall Configuration & Rules",
+    "Body": "Alex Patel marked this task as blocked",
+    "LinkEntityType": "TaskNode",
+    "LinkEntityId": "TASK_APEX_001_T5",
+    "IsRead": false,
+    "CreatedUtc": "2026-02-13T11:05:00Z"
+  },
+  {
+    "NotificationId": "NOTIF_003",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_GOV2",
+    "Type": "ApprovalRequired",
+    "Title": "Approval required for penetration testing task",
+    "Body": "Your approval is requested for TASK_APEX_001_T2",
+    "LinkEntityType": "ApprovalRequirement",
+    "LinkEntityId": "AR_001",
+    "IsRead": false,
+    "CreatedUtc": "2026-02-10T10:05:00Z"
+  },
+  {
+    "NotificationId": "NOTIF_004",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "Type": "TimeEntryConcurred",
+    "Title": "Your time entry was approved",
+    "Body": "Marcus Thompson concurred your time entry for 2026-02-14",
+    "LinkEntityType": "TimeEntry",
+    "LinkEntityId": "TE_001",
+    "IsRead": true,
+    "CreatedUtc": "2026-02-15T08:05:00Z"
+  }
+]
