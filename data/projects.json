@@ -1,0 +1,24 @@
+[
+  {
+    "projectId": "PROJ001",
+    "name": "Customer Portal Redesign",
+    "description": "Modernize the customer-facing portal with improved UX and performance",
+    "methodologyMode": "agile",
+    "status": "Active",
+    "startDate": "2025-02-01T00:00:00Z",
+    "endDate": "2025-08-31T00:00:00Z",
+    "leadershipRoleIds": ["ROLE001", "ROLE002"],
+    "createdAt": "2025-01-15T00:00:00Z"
+  },
+  {
+    "projectId": "PROJ002",
+    "name": "Enterprise Data Migration",
+    "description": "Migrate legacy data systems to modern cloud infrastructure",
+    "methodologyMode": "hybrid",
+    "status": "Active",
+    "startDate": "2025-03-01T00:00:00Z",
+    "endDate": "2026-02-28T00:00:00Z",
+    "leadershipRoleIds": ["ROLE006", "ROLE007"],
+    "createdAt": "2025-02-01T00:00:00Z"
+  }
+]
