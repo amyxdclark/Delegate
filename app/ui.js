@@ -1,5 +1,5 @@
 import { clampText, fmtDate, fmtDateTime, fmtHours } from "./utils.js";
-import { filterByTenant, getUnreadNotifications } from "./state.js";
+import { filterByTenant, getUnreadNotifications, isFeatureEnabled, getTenantBranding } from "./state.js";
 
 export function renderLoginScreen(state){
   const tenants = state.tenants || [];
@@ -43,29 +43,39 @@ export function appShell(state, currentUser, currentView){
   const user = state.users.find(u => u.UserId === currentUser.userId);
   const tenant = state.tenants.find(t => t.TenantId === currentUser.tenantId);
   const unreadCount = getUnreadNotifications(state, currentUser.userId).length;
+  const branding = getTenantBranding(state, currentUser.tenantId);
+  
+  // Apply tenant branding colors
+  const primaryColor = branding?.PrimaryColor || '#0e7490'; // Default cyan
+  const headerStyle = branding ? `style="border-bottom-color: ${primaryColor}20;"` : '';
+  
+  // Check feature flags for navigation
+  const hasChat = isFeatureEnabled(state, currentUser.tenantId, 'FF_CHAT_INTEGRATION');
+  const hasCalendar = isFeatureEnabled(state, currentUser.tenantId, 'FF_CALENDAR_SYNC');
+  const hasReporting = isFeatureEnabled(state, currentUser.tenantId, 'FF_ADVANCED_REPORTING');
+  const hasAI = isFeatureEnabled(state, currentUser.tenantId, 'FF_AI_ASSISTANT');
   
   return `
     <div class="flex flex-col min-h-screen">
-      <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+      <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur" ${headerStyle}>
         <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
           <img src="./assets/icons/icon-192.png" alt="Delegate" class="w-10 h-10 rounded-xl shadow" />
           <div class="flex-1">
             <div class="text-lg font-semibold leading-tight">Delegate</div>
             <div class="text-xs text-slate-400 -mt-0.5">${escapeHtml(tenant?.Name || 'Platform')}</div>
+            ${branding ? `<div class="text-xs text-slate-500 -mt-0.5">${escapeHtml(branding.ThemeName)}</div>` : ''}
           </div>
           
           <div class="flex items-center gap-3">
-            ${unreadCount > 0 ? `
-              <button class="relative px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">
-                <span class="text-sm">🔔</span>
-                <span class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-600 rounded-full">${unreadCount}</span>
-              </button>
-            ` : ''}
+            <button id="btnNotifications" class="relative px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">
+              <span class="text-sm">🔔</span>
+              ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-600 rounded-full">${unreadCount}</span>` : ''}
+            </button>
             
-            <div class="text-sm">
+            <button id="btnUserProfile" class="text-sm text-left hover:bg-slate-800 px-3 py-2 rounded-xl">
               <div class="font-medium">${escapeHtml(user?.DisplayName || 'User')}</div>
               <div class="text-xs text-slate-400">${escapeHtml(user?.PartyType || '')}</div>
-            </div>
+            </button>
             
             <button id="btnData" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Data</button>
             <button id="btnLogout" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Logout</button>
@@ -81,8 +91,10 @@ export function appShell(state, currentUser, currentView){
             ${navTab('tasks', '✅ Tasks', currentView)}
             ${navTab('timesheet', '⏱️ Timesheet', currentView)}
             ${navTab('forum', '💬 Forum', currentView)}
-            ${navTab('chat', '💭 Chat', currentView)}
-            ${navTab('calendar', '📅 Calendar', currentView)}
+            ${hasChat ? navTab('chat', '💭 Chat', currentView) : ''}
+            ${hasCalendar ? navTab('calendar', '📅 Calendar', currentView) : ''}
+            ${hasReporting ? navTab('reports', '📊 Reports', currentView) : ''}
+            ${hasAI ? navTab('ai', '🤖 AI Assistant', currentView) : ''}
           </div>
         </nav>
       </header>
@@ -708,4 +720,292 @@ export function escapeHtml(str){
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+// User Profile Page
+export function renderUserProfile(state, currentUser){
+  const user = state.users.find(u => u.UserId === currentUser.userId);
+  if(!user) return '<div class="p-4">User not found</div>';
+  
+  // Get user roles
+  const userRoles = (state.userRoles || []).filter(ur => 
+    ur.UserId === currentUser.userId && ur.TenantId === currentUser.tenantId && ur.IsActive
+  );
+  const roles = userRoles.map(ur => {
+    const role = (state.roles || []).find(r => r.RoleId === ur.RoleId);
+    return role?.Name || ur.RoleId;
+  });
+  
+  // Get user skills
+  const userSkills = (state.userSkills || []).filter(us => 
+    us.UserId === currentUser.userId && us.TenantId === currentUser.tenantId
+  );
+  const skills = userSkills.map(us => {
+    const skill = (state.skills || []).find(s => s.SkillId === us.SkillId);
+    return { skill, proficiency: us.ProficiencyLevel };
+  });
+  
+  // Get recent time entries
+  const recentTimeEntries = (state.timeEntries || [])
+    .filter(te => te.UserId === currentUser.userId)
+    .sort((a, b) => new Date(b.WorkDate) - new Date(a.WorkDate))
+    .slice(0, 5);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-5xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">User Profile</h1>
+      </div>
+      
+      <!-- User Info Card -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-slate-400">Display Name</div>
+            <div class="text-lg font-semibold">${escapeHtml(user.DisplayName)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Email</div>
+            <div>${escapeHtml(user.Email)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Party Type</div>
+            <div>${escapeHtml(user.PartyType)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Timezone</div>
+            <div>${escapeHtml(user.TimezoneIANA || 'Not set')}</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Roles -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Roles</h2>
+        <div class="flex flex-wrap gap-2">
+          ${roles.length === 0 ? '<div class="text-slate-400">No roles assigned</div>' : ''}
+          ${roles.map(r => `
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-sm">${escapeHtml(r)}</span>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Skills -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Skills</h2>
+        ${skills.length === 0 ? '<div class="text-slate-400">No skills recorded</div>' : ''}
+        <div class="space-y-3">
+          ${skills.map(s => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div>
+                <div class="font-medium">${escapeHtml(s.skill?.Name || 'Unknown Skill')}</div>
+                <div class="text-sm text-slate-400">${escapeHtml(s.skill?.Category || '')}</div>
+              </div>
+              <div class="px-3 py-1 rounded-lg ${
+                s.proficiency === 'Expert' ? 'bg-emerald-900 text-emerald-300' :
+                s.proficiency === 'Advanced' ? 'bg-cyan-900 text-cyan-300' :
+                s.proficiency === 'Intermediate' ? 'bg-blue-900 text-blue-300' :
+                'bg-slate-700 text-slate-300'
+              } text-xs font-semibold">${escapeHtml(s.proficiency)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Recent Time Entries -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Recent Time Entries</h2>
+        ${recentTimeEntries.length === 0 ? '<div class="text-slate-400">No time entries</div>' : ''}
+        <div class="space-y-2">
+          ${recentTimeEntries.map(te => {
+            const task = (state.taskNodes || []).find(t => t.TaskNodeId === te.TaskNodeId);
+            return `
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+                <div class="flex-1">
+                  <div class="font-medium text-sm">${escapeHtml(task?.Title || 'Unknown Task')}</div>
+                  <div class="text-xs text-slate-400">${fmtDate(te.WorkDate)}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="text-sm">${fmtHours(te.NetMinutes)}</div>
+                  <span class="px-2 py-1 rounded-lg text-xs ${
+                    te.State === 'Concurred' ? 'bg-emerald-900 text-emerald-300' :
+                    te.State === 'Pending' ? 'bg-amber-900 text-amber-300' :
+                    te.State === 'Draft' ? 'bg-slate-700 text-slate-300' :
+                    'bg-slate-700 text-slate-300'
+                  }">${escapeHtml(te.State)}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Reports Page (Advanced Reporting feature)
+export function renderReports(state, currentUser){
+  const tenantContracts = (state.contracts || []).filter(c => c.TenantId === currentUser.tenantId);
+  const tenantTasks = (state.taskNodes || []).filter(t => t.TenantId === currentUser.tenantId);
+  const tenantTimeEntries = (state.timeEntries || []).filter(te => te.TenantId === currentUser.tenantId);
+  
+  // Calculate hours by task
+  const taskHours = {};
+  tenantTimeEntries.forEach(te => {
+    if(!taskHours[te.TaskNodeId]) taskHours[te.TaskNodeId] = 0;
+    taskHours[te.TaskNodeId] += (te.NetMinutes || 0) / 60;
+  });
+  
+  const topTasks = Object.entries(taskHours)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([taskId, hours]) => {
+      const task = tenantTasks.find(t => t.TaskNodeId === taskId);
+      return { task, hours };
+    });
+  
+  // Calculate total hours
+  const totalHours = Object.values(taskHours).reduce((sum, h) => sum + h, 0);
+  
+  // Calculate hours by user
+  const userHours = {};
+  tenantTimeEntries.forEach(te => {
+    if(!userHours[te.UserId]) userHours[te.UserId] = 0;
+    userHours[te.UserId] += (te.NetMinutes || 0) / 60;
+  });
+  
+  const topUsers = Object.entries(userHours)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([userId, hours]) => {
+      const user = (state.users || []).find(u => u.UserId === userId);
+      return { user, hours };
+    });
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">📊 Advanced Reports</h1>
+      </div>
+      
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Contracts</div>
+          <div class="text-2xl font-bold">${tenantContracts.length}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Tasks</div>
+          <div class="text-2xl font-bold">${tenantTasks.length}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Hours</div>
+          <div class="text-2xl font-bold">${totalHours.toFixed(1)}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Time Entries</div>
+          <div class="text-2xl font-bold">${tenantTimeEntries.length}</div>
+        </div>
+      </div>
+      
+      <!-- Top Tasks by Hours -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Top Tasks by Hours</h2>
+        <div class="space-y-2">
+          ${topTasks.map(t => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium text-sm">${escapeHtml(t.task?.Title || 'Unknown Task')}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(t.task?.TaskNodeId || '')}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold">${t.hours.toFixed(1)} hrs</div>
+                <div class="text-xs text-slate-400">${((t.hours / totalHours) * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Top Users by Hours -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Team Utilization</h2>
+        <div class="space-y-2">
+          ${topUsers.map(u => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium text-sm">${escapeHtml(u.user?.DisplayName || 'Unknown User')}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(u.user?.PartyType || '')}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold">${u.hours.toFixed(1)} hrs</div>
+                <div class="text-xs text-slate-400">${((u.hours / totalHours) * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// AI Assistant Page
+export function renderAIAssistant(state, currentUser){
+  const aiPolicy = state.aiPolicy?.[0];
+  const conversations = (state.aiConversations || []).filter(c => c.UserId === currentUser.userId);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-4xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">🤖 AI Assistant</h1>
+      </div>
+      
+      <!-- AI Policy Notice -->
+      ${aiPolicy ? `
+        <div class="border border-cyan-800 rounded-2xl bg-cyan-950/30 p-6">
+          <h2 class="text-lg font-semibold mb-2">AI Usage Policy</h2>
+          <div class="text-sm text-slate-300 space-y-2">
+            <div><strong>Allowed:</strong> ${escapeHtml(aiPolicy.AllowedUseCases || 'Not specified')}</div>
+            <div><strong>Prohibited:</strong> ${escapeHtml(aiPolicy.ProhibitedUseCases || 'Not specified')}</div>
+            <div><strong>Data Retention:</strong> ${escapeHtml(aiPolicy.DataRetentionPolicy || 'Not specified')}</div>
+            ${aiPolicy.RequiresApproval ? '<div class="text-amber-400">⚠️ AI usage requires approval</div>' : ''}
+          </div>
+        </div>
+      ` : ''}
+      
+      <!-- Placeholder Interface -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">AI Chat Interface</h2>
+        <div class="space-y-4">
+          <div class="h-64 border border-slate-700 rounded-xl bg-slate-950 p-4 overflow-y-auto">
+            <div class="text-center text-slate-500 py-8">
+              AI Assistant conversation interface<br/>
+              <span class="text-sm">Coming soon</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" placeholder="Ask the AI assistant..." class="flex-1 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:border-cyan-600 focus:outline-none" disabled />
+            <button class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold" disabled>Send</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Conversation History -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Conversation History</h2>
+        ${conversations.length === 0 ? `
+          <div class="text-center text-slate-400 py-8">No conversations yet</div>
+        ` : `
+          <div class="space-y-2">
+            ${conversations.map(c => `
+              <div class="p-3 rounded-xl bg-slate-800">
+                <div class="font-medium text-sm">${escapeHtml(c.Title || 'Untitled Conversation')}</div>
+                <div class="text-xs text-slate-400">${fmtDateTime(c.CreatedUtc)}</div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
 }

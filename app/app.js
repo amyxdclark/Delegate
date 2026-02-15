@@ -1,5 +1,5 @@
-import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar } from "./ui.js";
-import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession } from "./state.js";
+import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar, renderUserProfile, renderReports, renderAIAssistant } from "./ui.js";
+import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession, resumeWorkSession, markNotificationRead, isFeatureEnabled, getUserRoles, isAdmin, isProjectManager, isApprover, getTenantBranding } from "./state.js";
 import { downloadJson, readJsonFile } from "./utils.js";
 
 let state = null;
@@ -108,19 +108,41 @@ function renderCurrentView(){
       break;
     case 'tasks':
       contentArea.innerHTML = renderTasks(state, currentUser);
+      wireTasks();
       break;
     case 'timesheet':
       contentArea.innerHTML = renderTimesheet(state, currentUser);
       wireTimerButtons();
+      wireTimesheetActions();
       break;
     case 'forum':
       contentArea.innerHTML = renderForum(state, currentUser);
+      wireForumActions();
       break;
     case 'chat':
       contentArea.innerHTML = renderChat(state, currentUser);
+      wireChatActions();
       break;
     case 'calendar':
       contentArea.innerHTML = renderCalendar(state, currentUser);
+      wireCalendarActions();
+      break;
+    case 'reports':
+      contentArea.innerHTML = renderReports(state, currentUser);
+      break;
+    case 'ai':
+      contentArea.innerHTML = renderAIAssistant(state, currentUser);
+      break;
+    case 'profile':
+      contentArea.innerHTML = renderUserProfile(state, currentUser);
+      wireProfileActions();
+      break;
+    case 'pto':
+      contentArea.innerHTML = renderPTO(state, currentUser);
+      wirePTOActions();
+      break;
+    case 'audit':
+      contentArea.innerHTML = renderAuditLog(state, currentUser);
       break;
     default:
       contentArea.innerHTML = '<div class="p-4">View not implemented yet</div>';
@@ -142,6 +164,21 @@ function wireGlobalButtons(){
   const btnData = el("btnData");
   if(btnData){
     btnData.addEventListener("click", () => openDataTools());
+  }
+  
+  // Notification button
+  const btnNotifications = el("btnNotifications");
+  if(btnNotifications){
+    btnNotifications.addEventListener("click", () => openNotificationsPanel());
+  }
+  
+  // User profile button
+  const btnUserProfile = el("btnUserProfile");
+  if(btnUserProfile){
+    btnUserProfile.addEventListener("click", () => {
+      currentView = 'profile';
+      renderCurrentView();
+    });
   }
 }
 
@@ -228,7 +265,7 @@ function startTimerUpdate(){
   }
   
   // Cache the start time for better performance
-  const startTime = new Date(activeSession.StartUtc).getTime();
+  const startTime = new Date(activeSession.StartedUtc).getTime();
   
   // Update timer every second
   timerInterval = setInterval(() => {
@@ -355,4 +392,63 @@ function escapeHtml(str){
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+// Notification panel
+function openNotificationsPanel(){
+  const notifications = (state.notifications || [])
+    .filter(n => n.UserId === currentUser.userId)
+    .sort((a, b) => new Date(b.CreatedUtc) - new Date(a.CreatedUtc));
+  
+  const body = `
+    <div class="space-y-2 max-h-96 overflow-y-auto">
+      ${notifications.length === 0 ? `
+        <div class="text-center py-8 text-slate-400">No notifications</div>
+      ` : notifications.map(n => `
+        <div class="p-3 rounded-xl ${n.IsRead ? 'bg-slate-900' : 'bg-slate-800'} border ${n.IsRead ? 'border-slate-800' : 'border-cyan-900'}">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="font-medium text-sm ${n.IsRead ? 'text-slate-300' : 'text-white'}">${escapeHtml(n.Title)}</div>
+              <div class="text-sm text-slate-400 mt-1">${escapeHtml(n.Body)}</div>
+              <div class="text-xs text-slate-500 mt-1">${new Date(n.CreatedUtc).toLocaleString()}</div>
+            </div>
+            ${!n.IsRead ? `
+              <button class="px-2 py-1 text-xs rounded-lg bg-slate-700 hover:bg-slate-600" data-mark-read="${n.NotificationId}">Mark Read</button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  const footer = `<button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Close</button>`;
+  setModal(modal("Notifications", body, footer));
+  
+  // Wire up mark read buttons
+  document.querySelectorAll('[data-mark-read]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const notifId = e.target.getAttribute('data-mark-read');
+      markNotificationRead(state, notifId);
+      persist();
+      setModal(""); // Close modal
+      showApp(); // Refresh to update badge count
+    });
+  });
+}
+
+// Stub functions for wiring various views - will implement progressively
+function wireTasks(){}
+function wireTimesheetActions(){}
+function wireForumActions(){}
+function wireChatActions(){}
+function wireCalendarActions(){}
+function wireProfileActions(){}
+function wirePTOActions(){}
+
+// PTO and Audit Log views - will implement in ui.js
+function renderPTO(state, currentUser){
+  return '<div class="p-4 text-center text-slate-400">PTO view - Coming soon</div>';
+}
+
+function renderAuditLog(state, currentUser){
+  return '<div class="p-4 text-center text-slate-400">Audit Log view - Coming soon</div>';
 }

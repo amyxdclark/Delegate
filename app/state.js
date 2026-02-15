@@ -271,3 +271,60 @@ export function getUnreadNotifications(state, userId){
   if(!state.notifications) return [];
   return state.notifications.filter(n => n.UserId === userId && !n.IsRead);
 }
+
+// Feature flag helpers
+export function isFeatureEnabled(state, tenantId, featureFlagId){
+  if(!state.tenantFeatureFlags) return false;
+  const tff = state.tenantFeatureFlags.find(f => 
+    f.TenantId === tenantId && f.FeatureFlagId === featureFlagId
+  );
+  return tff?.IsEnabled || false;
+}
+
+// Role-based permission helpers
+export function getUserRoles(state, userId, tenantId){
+  if(!state.userRoles) return [];
+  return state.userRoles.filter(ur => 
+    ur.UserId === userId && ur.TenantId === tenantId && ur.IsActive
+  );
+}
+
+export function hasRole(state, userId, tenantId, roleId){
+  const userRoles = getUserRoles(state, userId, tenantId);
+  return userRoles.some(ur => ur.RoleId === roleId);
+}
+
+export function hasAnyRole(state, userId, tenantId, roleIds){
+  const userRoles = getUserRoles(state, userId, tenantId);
+  return userRoles.some(ur => roleIds.includes(ur.RoleId));
+}
+
+export function isAdmin(state, userId, tenantId){
+  return hasAnyRole(state, userId, tenantId, [
+    'ROLE_PLATFORM_ADMIN',
+    'ROLE_COMPANY_ADMIN',
+    'ROLE_MERID_ADMIN'
+  ]);
+}
+
+export function isProjectManager(state, userId, tenantId){
+  return hasAnyRole(state, userId, tenantId, [
+    'ROLE_PROJECT_MANAGER',
+    'ROLE_MERID_PM'
+  ]);
+}
+
+export function isApprover(state, userId, tenantId){
+  return hasAnyRole(state, userId, tenantId, [
+    'ROLE_GOV_APPROVER',
+    'ROLE_COR',
+    'ROLE_PROJECT_MANAGER',
+    'ROLE_MERID_PM'
+  ]);
+}
+
+// Tenant branding helper
+export function getTenantBranding(state, tenantId){
+  if(!state.tenantBranding) return null;
+  return state.tenantBranding.find(tb => tb.TenantId === tenantId);
+}
