@@ -1,0 +1,32 @@
+[
+  {
+    "sprintId": "SPRINT001",
+    "projectId": "PROJ001",
+    "name": "Sprint 1: Foundation",
+    "goal": "Set up core infrastructure and authentication",
+    "startDate": "2025-02-01T00:00:00Z",
+    "endDate": "2025-02-14T00:00:00Z",
+    "status": "Completed",
+    "createdAt": "2025-01-25T00:00:00Z"
+  },
+  {
+    "sprintId": "SPRINT002",
+    "projectId": "PROJ001",
+    "name": "Sprint 2: User Dashboard",
+    "goal": "Implement main user dashboard with key features",
+    "startDate": "2025-02-15T00:00:00Z",
+    "endDate": "2025-02-28T00:00:00Z",
+    "status": "Active",
+    "createdAt": "2025-02-10T00:00:00Z"
+  },
+  {
+    "sprintId": "SPRINT003",
+    "projectId": "PROJ001",
+    "name": "Sprint 3: Advanced Features",
+    "goal": "Add reporting and analytics capabilities",
+    "startDate": "2025-03-01T00:00:00Z",
+    "endDate": "2025-03-14T00:00:00Z",
+    "status": "Planned",
+    "createdAt": "2025-02-12T00:00:00Z"
+  }
+]

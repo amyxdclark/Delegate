@@ -1,0 +1,13 @@
+{
+  "global": {
+    "enableAgile": true,
+    "enablePmi": true,
+    "enableHybridMapping": true,
+    "enableRaci": true,
+    "enableRaid": true,
+    "enableBurndown": true,
+    "enableTimeline": true,
+    "enableAuditLog": true
+  },
+  "perProject": {}
+}
