@@ -1,6 +1,6 @@
 import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar, renderUserProfile, renderReports, renderAIAssistant } from "./ui.js";
-import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession, resumeWorkSession, markNotificationRead, isFeatureEnabled, getUserRoles, isAdmin, isProjectManager, isApprover, getTenantBranding } from "./state.js";
-import { downloadJson, readJsonFile } from "./utils.js";
+import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession, resumeWorkSession, markNotificationRead, isFeatureEnabled, getUserRoles, isAdmin, isProjectManager, isApprover, getTenantBranding, transitionTimeEntry, addToCollection } from "./state.js";
+import { downloadJson, readJsonFile, uid } from "./utils.js";
 
 let state = null;
 let currentUser = null;
@@ -199,6 +199,7 @@ function wireTimerButtons(){
   const btnStart = el("btnStartTimer");
   const btnPause = el("btnPauseTimer");
   const btnStop = el("btnStopTimer");
+  const btnResume = el("btnResumeTimer");
   
   if(btnStart){
     btnStart.addEventListener("click", () => {
@@ -224,11 +225,26 @@ function wireTimerButtons(){
     });
   }
   
+  if(btnResume){
+    btnResume.addEventListener("click", () => {
+      // Find paused session and resume it
+      const pausedSession = (state.workSessions || []).find(ws => 
+        ws.UserId === currentUser.userId && ws.State === 'Paused'
+      );
+      if(pausedSession){
+        state = resumeWorkSession(state, pausedSession.WorkSessionId);
+        persist();
+        renderCurrentView();
+        startTimerUpdate();
+      }
+    });
+  }
+  
   if(btnStop){
     btnStop.addEventListener("click", () => {
-      // Find active session and stop it
+      // Find active or paused session and stop it
       const activeSession = (state.workSessions || []).find(ws => 
-        ws.UserId === currentUser.userId && ws.State === 'Running'
+        ws.UserId === currentUser.userId && (ws.State === 'Running' || ws.State === 'Paused')
       );
       if(activeSession){
         state = stopWorkSession(state, activeSession.WorkSessionId);
@@ -435,9 +451,104 @@ function openNotificationsPanel(){
   });
 }
 
+// Create time entry modal
+function openCreateTimeEntryModal(){
+  // Get user's assigned tasks
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const assignedTasks = (state.taskNodes || []).filter(tn => 
+    assignedTaskIds.includes(tn.TaskNodeId)
+  );
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Task</div>
+        <select id="teTaskSelect" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="">Select a task...</option>
+          ${assignedTasks.map(t => `<option value="${t.TaskNodeId}">${escapeHtml(t.Title)}</option>`).join('')}
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Work Date</div>
+        <input type="date" id="teWorkDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${new Date().toISOString().slice(0,10)}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Hours</div>
+        <input type="number" id="teHours" min="0" max="24" step="0.5" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="8" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Notes</div>
+        <textarea id="teNotes" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="What did you work on?"></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveTimeEntry" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Entry</button>
+  `;
+  setModal(modal("Create Time Entry", body, footer));
+  
+  // Wire save button
+  el("btnSaveTimeEntry").addEventListener("click", () => {
+    const taskId = el("teTaskSelect").value;
+    const workDate = el("teWorkDate").value;
+    const hours = parseFloat(el("teHours").value);
+    const notes = el("teNotes").value;
+    
+    if(!taskId || !workDate || !hours){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const timeEntry = {
+      TimeEntryId: uid('TE'),
+      TenantId: currentUser.tenantId,
+      UserId: currentUser.userId,
+      TaskNodeId: taskId,
+      WorkDate: workDate,
+      NetMinutes: hours * 60,
+      Hours: hours,
+      State: 'Draft',
+      Notes: notes,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    addToCollection(state.timeEntries, timeEntry);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
 // Stub functions for wiring various views - will implement progressively
 function wireTasks(){}
-function wireTimesheetActions(){}
+
+function wireTimesheetActions(){
+  // Wire create time entry button
+  const btnCreate = el("btnCreateTimeEntry");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreateTimeEntryModal());
+  }
+  
+  // Wire submit buttons
+  document.querySelectorAll('[data-submit-entry]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const entryId = e.target.getAttribute('data-submit-entry');
+      if(confirm('Submit this time entry for approval?')){
+        transitionTimeEntry(state, entryId, 'Pending', currentUser.userId);
+        persist();
+        renderCurrentView();
+      }
+    });
+  });
+}
+
 function wireForumActions(){}
 function wireChatActions(){}
 function wireCalendarActions(){}

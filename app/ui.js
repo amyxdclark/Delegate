@@ -393,12 +393,27 @@ export function renderTimesheet(state, currentUser){
   );
   
   const activeSession = workSessions.find(ws => ws.State === 'Running');
+  const pausedSession = workSessions.find(ws => ws.State === 'Paused');
+  
+  // Get user's assigned tasks for time entry creation
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const assignedTasks = (state.taskNodes || []).filter(tn => 
+    assignedTaskIds.includes(tn.TaskNodeId)
+  );
   
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Timesheet</h1>
-        <p class="text-slate-400">Track your time and manage work sessions</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">Timesheet</h1>
+          <p class="text-slate-400">Track your time and manage work sessions</p>
+        </div>
+        <button id="btnCreateTimeEntry" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold">
+          + New Time Entry
+        </button>
       </div>
       
       <!-- Active Timer -->
@@ -408,11 +423,29 @@ export function renderTimesheet(state, currentUser){
             <div class="flex-1">
               <div class="text-sm text-slate-400 mb-1">Active Timer</div>
               <div class="text-2xl font-bold mb-1" id="timerDisplay">00:00:00</div>
-              <div class="text-sm text-slate-400">Started: ${fmtDateTime(activeSession.StartUtc)}</div>
+              <div class="text-sm text-slate-400">Started: ${fmtDateTime(activeSession.StartedUtc)}</div>
             </div>
             <div class="flex gap-2">
               <button id="btnPauseTimer" class="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-600 font-semibold">
                 ⏸️ Pause
+              </button>
+              <button id="btnStopTimer" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 font-semibold">
+                ⏹️ Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      ` : pausedSession ? `
+        <div class="mb-6 p-6 rounded-2xl border-2 border-amber-600 bg-amber-950/20">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <div class="text-sm text-slate-400 mb-1">Timer Paused</div>
+              <div class="text-lg font-semibold mb-1">Session paused</div>
+              <div class="text-sm text-slate-400">Started: ${fmtDateTime(pausedSession.StartedUtc)}</div>
+            </div>
+            <div class="flex gap-2">
+              <button id="btnResumeTimer" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 font-semibold">
+                ▶️ Resume
               </button>
               <button id="btnStopTimer" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 font-semibold">
                 ⏹️ Stop
@@ -448,6 +481,7 @@ export function renderTimesheet(state, currentUser){
                 <th class="px-4 py-3 text-left font-medium text-slate-400">Hours</th>
                 <th class="px-4 py-3 text-left font-medium text-slate-400">State</th>
                 <th class="px-4 py-3 text-left font-medium text-slate-400">Notes</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -457,19 +491,24 @@ export function renderTimesheet(state, currentUser){
                   <tr class="border-b border-slate-800/50 hover:bg-slate-900/30">
                     <td class="px-4 py-3">${fmtDate(te.WorkDate)}</td>
                     <td class="px-4 py-3">${escapeHtml(task?.Title || 'Unknown Task')}</td>
-                    <td class="px-4 py-3 font-semibold">${fmtHours(te.Hours)}</td>
+                    <td class="px-4 py-3 font-semibold">${fmtHours(te.NetMinutes)}</td>
                     <td class="px-4 py-3">
                       <span class="px-2 py-1 rounded-lg text-xs ${stateColor(te.State)}">
                         ${te.State}
                       </span>
                     </td>
                     <td class="px-4 py-3 text-slate-400">${escapeHtml(clampText(te.Notes || '', 50))}</td>
+                    <td class="px-4 py-3">
+                      ${te.State === 'Draft' ? `
+                        <button class="px-2 py-1 text-xs rounded-lg bg-cyan-700 hover:bg-cyan-600" data-submit-entry="${te.TimeEntryId}">Submit</button>
+                      ` : ''}
+                    </td>
                   </tr>
                 `;
               }).join('')}
               ${timeEntries.length === 0 ? `
                 <tr>
-                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">No time entries yet</td>
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400">No time entries yet</td>
                 </tr>
               ` : ''}
             </tbody>
