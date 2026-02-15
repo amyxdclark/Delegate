@@ -31,16 +31,16 @@ class Store {
   async loadSeedData() {
     try {
       const [company, projects, users, roles, roleAssignments, sprints, workItems, raid, mappings, features] = await Promise.all([
-        fetch('/data/company.json').then(r => r.json()),
-        fetch('/data/projects.json').then(r => r.json()),
-        fetch('/data/users.json').then(r => r.json()),
-        fetch('/data/roles.json').then(r => r.json()),
-        fetch('/data/roleAssignments.json').then(r => r.json()),
-        fetch('/data/sprints.json').then(r => r.json()),
-        fetch('/data/workItems.json').then(r => r.json()),
-        fetch('/data/raid.json').then(r => r.json()),
-        fetch('/data/mappings.json').then(r => r.json()),
-        fetch('/data/features.json').then(r => r.json())
+        fetch('./data/company.json').then(r => r.json()),
+        fetch('./data/projects.json').then(r => r.json()),
+        fetch('./data/users.json').then(r => r.json()),
+        fetch('./data/roles.json').then(r => r.json()),
+        fetch('./data/roleAssignments.json').then(r => r.json()),
+        fetch('./data/sprints.json').then(r => r.json()),
+        fetch('./data/workItems.json').then(r => r.json()),
+        fetch('./data/raid.json').then(r => r.json()),
+        fetch('./data/mappings.json').then(r => r.json()),
+        fetch('./data/features.json').then(r => r.json())
       ]);
       
       this.seedData = {
