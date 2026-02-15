@@ -39,7 +39,9 @@ async function init() {
       console.log('State updated');
     });
     
-    // Initial route handling will be triggered by router
+    // Trigger initial route handling now that routes are registered
+    router.handleRoute();
+    
     console.log('Delegate app initialized successfully');
     
   } catch (err) {
