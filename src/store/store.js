@@ -2,6 +2,7 @@
 
 import { generateId } from '../utils/id.js';
 import { toISOString } from '../utils/dates.js';
+import { resolvePath } from '../config.js';
 
 const STORAGE_KEY = 'delegate.appState.v1';
 const DEMO_STORAGE_KEY = 'delegate.demoState.v1';
@@ -31,16 +32,16 @@ class Store {
   async loadSeedData() {
     try {
       const [company, projects, users, roles, roleAssignments, sprints, workItems, raid, mappings, features] = await Promise.all([
-        fetch('./data/company.json').then(r => r.json()),
-        fetch('./data/projects.json').then(r => r.json()),
-        fetch('./data/users.json').then(r => r.json()),
-        fetch('./data/roles.json').then(r => r.json()),
-        fetch('./data/roleAssignments.json').then(r => r.json()),
-        fetch('./data/sprints.json').then(r => r.json()),
-        fetch('./data/workItems.json').then(r => r.json()),
-        fetch('./data/raid.json').then(r => r.json()),
-        fetch('./data/mappings.json').then(r => r.json()),
-        fetch('./data/features.json').then(r => r.json())
+        fetch(resolvePath('data/company.json')).then(r => r.json()),
+        fetch(resolvePath('data/projects.json')).then(r => r.json()),
+        fetch(resolvePath('data/users.json')).then(r => r.json()),
+        fetch(resolvePath('data/roles.json')).then(r => r.json()),
+        fetch(resolvePath('data/roleAssignments.json')).then(r => r.json()),
+        fetch(resolvePath('data/sprints.json')).then(r => r.json()),
+        fetch(resolvePath('data/workItems.json')).then(r => r.json()),
+        fetch(resolvePath('data/raid.json')).then(r => r.json()),
+        fetch(resolvePath('data/mappings.json')).then(r => r.json()),
+        fetch(resolvePath('data/features.json')).then(r => r.json())
       ]);
       
       this.seedData = {
