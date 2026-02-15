@@ -600,6 +600,9 @@ export function renderChat(state, currentUser){
   const chatThreads = (state.chatThreads || []).filter(t => t.TenantId === currentUser.tenantId)
     .sort((a, b) => new Date(b.LastMessageUtc) - new Date(a.LastMessageUtc));
   
+  // Store selected thread in a global for now (could use URL param or state)
+  const selectedThreadId = chatThreads[0]?.ThreadId;
+  
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
       <div class="mb-6">
@@ -615,17 +618,17 @@ export function renderChat(state, currentUser){
           </div>
           <div class="divide-y divide-slate-800/50 max-h-[600px] overflow-y-auto">
             ${chatThreads.map((thread, idx) => `
-              <div class="p-4 hover:bg-slate-900/40 cursor-pointer ${idx === 0 ? 'bg-slate-900/40' : ''}">
+              <button class="w-full text-left p-4 hover:bg-slate-900/40 ${idx === 0 ? 'bg-slate-900/40' : ''}" data-chat-thread="${thread.ThreadId}">
                 <div class="font-medium text-sm mb-1">${escapeHtml(thread.Title)}</div>
                 <div class="text-xs text-slate-400">${fmtDateTime(thread.LastMessageUtc)}</div>
-              </div>
+              </button>
             `).join('')}
             ${chatThreads.length === 0 ? '<div class="p-4 text-sm text-slate-400 text-center">No conversations</div>' : ''}
           </div>
         </div>
         
         <!-- Chat messages -->
-        <div class="lg:col-span-2 border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
+        <div id="chatMessagesContainer" class="lg:col-span-2 border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
           ${chatThreads.length > 0 ? renderChatMessages(state, chatThreads[0]) : `
             <div class="p-8 text-center text-slate-400">
               Select a conversation to view messages
@@ -641,13 +644,21 @@ function renderChatMessages(state, thread){
   const messages = (state.chatMessages || []).filter(m => m.ThreadId === thread.ThreadId)
     .sort((a, b) => new Date(a.SentUtc) - new Date(b.SentUtc));
   
+  // Get participants
+  const participants = (state.chatParticipants || []).filter(p => p.ThreadId === thread.ThreadId);
+  const participantUsers = participants.map(p => {
+    const user = (state.users || []).find(u => u.UserId === p.UserId);
+    return user ? user.DisplayName : 'Unknown';
+  }).join(', ');
+  
   return `
     <div class="flex flex-col h-[600px]">
       <div class="p-4 border-b border-slate-800">
         <div class="font-semibold">${escapeHtml(thread.Title)}</div>
+        ${participantUsers ? `<div class="text-xs text-slate-400 mt-1">Participants: ${escapeHtml(participantUsers)}</div>` : ''}
       </div>
       
-      <div class="flex-1 p-4 space-y-3 overflow-y-auto">
+      <div id="chatMessagesList" class="flex-1 p-4 space-y-3 overflow-y-auto">
         ${messages.map(msg => {
           const author = state.users?.find(u => u.UserId === msg.SentBy);
           return `
@@ -670,8 +681,8 @@ function renderChatMessages(state, thread){
       
       <div class="p-4 border-t border-slate-800">
         <div class="flex gap-2">
-          <input type="text" placeholder="Type a message..." class="flex-1 px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-600 focus:outline-none text-sm" />
-          <button class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold text-sm">Send</button>
+          <input type="text" id="chatMessageInput" data-thread-id="${thread.ThreadId}" placeholder="Type a message..." class="flex-1 px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-600 focus:outline-none text-sm" />
+          <button id="btnSendChatMessage" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold text-sm">Send</button>
         </div>
       </div>
     </div>

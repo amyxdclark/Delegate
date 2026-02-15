@@ -550,7 +550,79 @@ function wireTimesheetActions(){
 }
 
 function wireForumActions(){}
-function wireChatActions(){}
+
+function wireChatActions(){
+  // Wire send message button
+  const btnSend = el("btnSendChatMessage");
+  if(btnSend){
+    btnSend.addEventListener("click", () => sendChatMessage());
+  }
+  
+  // Wire enter key to send
+  const msgInput = el("chatMessageInput");
+  if(msgInput){
+    msgInput.addEventListener("keypress", (e) => {
+      if(e.key === 'Enter'){
+        sendChatMessage();
+      }
+    });
+  }
+  
+  // Wire thread switching
+  document.querySelectorAll('[data-chat-thread]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const threadId = e.currentTarget.getAttribute('data-chat-thread');
+      switchChatThread(threadId);
+    });
+  });
+}
+
+function sendChatMessage(){
+  const msgInput = el("chatMessageInput");
+  if(!msgInput) return;
+  
+  const body = msgInput.value.trim();
+  const threadId = msgInput.getAttribute('data-thread-id');
+  
+  if(!body || !threadId) return;
+  
+  const message = {
+    MessageId: uid('MSG'),
+    ThreadId: threadId,
+    TenantId: currentUser.tenantId,
+    SentBy: currentUser.userId,
+    Body: body,
+    SentUtc: new Date().toISOString()
+  };
+  
+  addToCollection(state.chatMessages, message);
+  
+  // Update thread's last message time
+  const thread = state.chatThreads.find(t => t.ThreadId === threadId);
+  if(thread){
+    thread.LastMessageUtc = message.SentUtc;
+  }
+  
+  persist();
+  
+  // Clear input and re-render to show new message
+  msgInput.value = '';
+  renderCurrentView();
+}
+
+function switchChatThread(threadId){
+  const thread = state.chatThreads.find(t => t.ThreadId === threadId);
+  if(!thread) return;
+  
+  // Re-render just the messages container
+  const container = el("chatMessagesContainer");
+  if(container){
+    // Import renderChatMessages - we need to expose it or inline it here
+    // For now, just re-render the whole view
+    renderCurrentView();
+  }
+}
+
 function wireCalendarActions(){}
 function wireProfileActions(){}
 
