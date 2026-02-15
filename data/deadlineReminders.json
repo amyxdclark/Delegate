@@ -1,0 +1,20 @@
+[
+  {
+    "ReminderId": "REM_001",
+    "TenantId": "TENANT001",
+    "DeadlineId": "DL_002",
+    "ReminderUtc": "2026-02-19T09:00:00Z",
+    "Channel": "email",
+    "SentUtc": null,
+    "State": "Pending"
+  },
+  {
+    "ReminderId": "REM_002",
+    "TenantId": "TENANT001",
+    "DeadlineId": "DL_003",
+    "ReminderUtc": "2026-02-24T09:00:00Z",
+    "Channel": "in_app",
+    "SentUtc": null,
+    "State": "Pending"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "FeatureFlagId": "FF_AI_ASSISTANT",
+    "Key": "ai_assistant_enabled",
+    "Description": "Enable AI assistant for task suggestions and analysis"
+  },
+  {
+    "FeatureFlagId": "FF_ADVANCED_REPORTING",
+    "Key": "advanced_reporting",
+    "Description": "Enable advanced reporting and analytics"
+  },
+  {
+    "FeatureFlagId": "FF_CHAT_INTEGRATION",
+    "Key": "chat_integration",
+    "Description": "Enable real-time chat and collaboration"
+  },
+  {
+    "FeatureFlagId": "FF_CALENDAR_SYNC",
+    "Key": "calendar_sync",
+    "Description": "Enable calendar synchronization"
+  },
+  {
+    "FeatureFlagId": "FF_MOBILE_APP",
+    "Key": "mobile_app_access",
+    "Description": "Enable mobile application access"
+  }
+]

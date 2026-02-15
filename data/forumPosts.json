@@ -1,0 +1,86 @@
+[
+  {
+    "PostId": "FP_001",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_001",
+    "BodyMarkdown": "I recommend we use a phased approach: first automated scanning, then manual testing of critical systems, and finally social engineering assessment. What do you think?",
+    "PostType": "Comment",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-01-16T10:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_002",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_001",
+    "BodyMarkdown": "Agreed on the phased approach. I'll start with automated scanning this week. Should have initial results by Friday.",
+    "PostType": "Comment",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_WORKER2",
+    "CreatedUtc": "2026-01-16T11:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_003",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_002",
+    "BodyMarkdown": "**BLOCKER:** Cannot proceed with firewall configuration until we receive the updated security policy document from DOD. Current document doesn't cover the new DMZ requirements.",
+    "PostType": "Blocker",
+    "Visibility": "SharedWithGovernment",
+    "CreatedByUserId": "USER_APEX_WORKER3",
+    "CreatedUtc": "2026-02-13T11:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_004",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_002",
+    "BodyMarkdown": "I've reached out to Col. Morrison for the updated policy. He said it should be available by EOD Tuesday.",
+    "PostType": "StatusUpdate",
+    "Visibility": "SharedWithGovernment",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-02-13T14:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_005",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_002",
+    "BodyMarkdown": "Approved the additional 50 hours for this task given the complexity. Please update your estimates accordingly.",
+    "PostType": "Decision",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_PM1",
+    "CreatedUtc": "2026-02-11T09:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_006",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_003",
+    "BodyMarkdown": "**DECISION:** We'll proceed with the second phase of testing as planned. Initial vulnerability scan results look good, no critical findings. Government review scheduled for next week.",
+    "PostType": "Decision",
+    "Visibility": "SharedWithGovernment",
+    "CreatedByUserId": "USER_APEX_PM1",
+    "CreatedUtc": "2026-02-01T14:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  },
+  {
+    "PostId": "FP_007",
+    "TenantId": "TENANT001",
+    "ThreadId": "FT_004",
+    "BodyMarkdown": "Working on the migration strategy document. I think we should include a pilot phase with a small subset of records before the full migration. Thoughts?",
+    "PostType": "Comment",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_WORKER2",
+    "CreatedUtc": "2026-02-14T10:00:00Z",
+    "EditedByUserId": null,
+    "EditedUtc": null
+  }
+]

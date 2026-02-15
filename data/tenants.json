@@ -1,0 +1,20 @@
+[
+  {
+    "TenantId": "TENANT001",
+    "Name": "Apex Federal Services",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:00:00Z"
+  },
+  {
+    "TenantId": "TENANT002",
+    "Name": "Meridian GovTech",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T08:30:00Z"
+  },
+  {
+    "TenantId": "PLATFORM",
+    "Name": "Platform Owner",
+    "IsActive": true,
+    "CreatedUtc": "2024-12-01T00:00:00Z"
+  }
+]

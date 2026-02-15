@@ -1,0 +1,38 @@
+[
+  {
+    "DeadlineId": "DL_001",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_001",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "Title": "Complete Penetration Testing",
+    "DueUtc": "2026-02-28T17:00:00Z",
+    "OwnerUserId": "USER_APEX_WORKER2",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-01-16T08:30:00Z"
+  },
+  {
+    "DeadlineId": "DL_002",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_001",
+    "TaskNodeId": "TASK_APEX_001_AREA1",
+    "Title": "Security Assessment Milestone - Government Review",
+    "DueUtc": "2026-02-20T14:00:00Z",
+    "OwnerUserId": "USER_APEX_PM1",
+    "Visibility": "SharedWithGovernment",
+    "CreatedByUserId": "USER_APEX_PM1",
+    "CreatedUtc": "2026-02-01T14:00:00Z"
+  },
+  {
+    "DeadlineId": "DL_003",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_002",
+    "TaskNodeId": "TASK_APEX_002_T2",
+    "Title": "Migration Strategy Document Due",
+    "DueUtc": "2026-02-25T17:00:00Z",
+    "OwnerUserId": "USER_APEX_WORKER2",
+    "Visibility": "ContractorOnly",
+    "CreatedByUserId": "USER_APEX_LEAD1",
+    "CreatedUtc": "2026-02-01T11:15:00Z"
+  }
+]

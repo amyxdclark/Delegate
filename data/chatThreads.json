@@ -1,0 +1,29 @@
+[
+  {
+    "ChatThreadId": "CT_001",
+    "TenantId": "TENANT001",
+    "ThreadType": "TaskChat",
+    "TaskNodeId": "TASK_APEX_001_T2",
+    "Title": "Penetration Testing Task Chat",
+    "Visibility": "ContractorOnly",
+    "CreatedUtc": "2026-01-16T08:20:00Z"
+  },
+  {
+    "ChatThreadId": "CT_002",
+    "TenantId": "TENANT001",
+    "ThreadType": "DirectChat",
+    "TaskNodeId": null,
+    "Title": "Marcus & Jennifer Direct Chat",
+    "Visibility": "ContractorOnly",
+    "CreatedUtc": "2026-01-20T10:00:00Z"
+  },
+  {
+    "ChatThreadId": "CT_003",
+    "TenantId": "TENANT001",
+    "ThreadType": "TaskChat",
+    "TaskNodeId": "TASK_APEX_001_AREA2",
+    "Title": "Firewall Modernization Team Chat",
+    "Visibility": "ContractorOnly",
+    "CreatedUtc": "2026-01-20T09:00:00Z"
+  }
+]

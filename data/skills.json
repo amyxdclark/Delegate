@@ -1,0 +1,50 @@
+[
+  {
+    "SkillId": "SKILL_001",
+    "TenantId": "TENANT001",
+    "Name": "Network Security",
+    "Category": "Cybersecurity",
+    "Description": "Knowledge of network security protocols, firewalls, and intrusion detection",
+    "IsActive": true
+  },
+  {
+    "SkillId": "SKILL_002",
+    "TenantId": "TENANT001",
+    "Name": "Penetration Testing",
+    "Category": "Cybersecurity",
+    "Description": "Ethical hacking and penetration testing skills",
+    "IsActive": true
+  },
+  {
+    "SkillId": "SKILL_003",
+    "TenantId": "TENANT001",
+    "Name": "Cloud Architecture (AWS)",
+    "Category": "Cloud Computing",
+    "Description": "AWS cloud infrastructure design and implementation",
+    "IsActive": true
+  },
+  {
+    "SkillId": "SKILL_004",
+    "TenantId": "TENANT001",
+    "Name": "Database Administration",
+    "Category": "Data Management",
+    "Description": "SQL and NoSQL database management",
+    "IsActive": true
+  },
+  {
+    "SkillId": "SKILL_005",
+    "TenantId": "TENANT001",
+    "Name": "Project Management",
+    "Category": "Management",
+    "Description": "Agile/Scrum project management methodologies",
+    "IsActive": true
+  },
+  {
+    "SkillId": "SKILL_006",
+    "TenantId": "TENANT002",
+    "Name": "Cloud Architecture (AWS)",
+    "Category": "Cloud Computing",
+    "Description": "AWS cloud services and architecture",
+    "IsActive": true
+  }
+]

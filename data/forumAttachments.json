@@ -1,0 +1,28 @@
+[
+  {
+    "AttachmentId": "FA_001",
+    "TenantId": "TENANT001",
+    "PostId": "FP_001",
+    "FileName": "penetration-testing-plan.pdf",
+    "ContentType": "application/pdf",
+    "SizeBytes": 245678,
+    "StorageKey": "attachments/tenant001/fa_001_penetration-testing-plan.pdf",
+    "Hash": "sha256:abc123def456",
+    "UploadedByUserId": "USER_APEX_LEAD1",
+    "UploadedUtc": "2026-01-16T10:05:00Z",
+    "Visibility": "ContractorOnly"
+  },
+  {
+    "AttachmentId": "FA_002",
+    "TenantId": "TENANT001",
+    "PostId": "FP_006",
+    "FileName": "vulnerability-scan-results.xlsx",
+    "ContentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "SizeBytes": 512340,
+    "StorageKey": "attachments/tenant001/fa_002_vulnerability-scan-results.xlsx",
+    "Hash": "sha256:def789ghi012",
+    "UploadedByUserId": "USER_APEX_PM1",
+    "UploadedUtc": "2026-02-01T14:15:00Z",
+    "Visibility": "SharedWithGovernment"
+  }
+]

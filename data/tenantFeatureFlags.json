@@ -1,0 +1,44 @@
+[
+  {
+    "TenantFeatureFlagId": "TFF_APEX_AI",
+    "TenantId": "TENANT001",
+    "FeatureFlagId": "FF_AI_ASSISTANT",
+    "IsEnabled": true,
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "TenantFeatureFlagId": "TFF_APEX_REPORTING",
+    "TenantId": "TENANT001",
+    "FeatureFlagId": "FF_ADVANCED_REPORTING",
+    "IsEnabled": true,
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "TenantFeatureFlagId": "TFF_APEX_CHAT",
+    "TenantId": "TENANT001",
+    "FeatureFlagId": "FF_CHAT_INTEGRATION",
+    "IsEnabled": true,
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "TenantFeatureFlagId": "TFF_APEX_CALENDAR",
+    "TenantId": "TENANT001",
+    "FeatureFlagId": "FF_CALENDAR_SYNC",
+    "IsEnabled": true,
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "TenantFeatureFlagId": "TFF_MERID_CHAT",
+    "TenantId": "TENANT002",
+    "FeatureFlagId": "FF_CHAT_INTEGRATION",
+    "IsEnabled": true,
+    "UpdatedUtc": "2025-02-01T10:30:00Z"
+  },
+  {
+    "TenantFeatureFlagId": "TFF_MERID_CALENDAR",
+    "TenantId": "TENANT002",
+    "FeatureFlagId": "FF_CALENDAR_SYNC",
+    "IsEnabled": false,
+    "UpdatedUtc": "2025-02-01T10:30:00Z"
+  }
+]

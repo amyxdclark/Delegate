@@ -1,0 +1,162 @@
+[
+  {
+    "UserRoleId": "UR_PLATFORM_ADMIN",
+    "TenantId": "PLATFORM",
+    "UserId": "USER_PLATFORM_ADMIN",
+    "RoleId": "ROLE_PLATFORM_ADMIN",
+    "ScopeType": "Tenant",
+    "ScopeId": "PLATFORM",
+    "IsActive": true,
+    "CreatedUtc": "2024-12-01T00:00:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_ADMIN",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_ADMIN",
+    "RoleId": "ROLE_COMPANY_ADMIN",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:15:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_PM1",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_PM1",
+    "RoleId": "ROLE_PROJECT_MANAGER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:20:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_LEAD1",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_LEAD1",
+    "RoleId": "ROLE_TASK_LEAD",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:25:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_WORKER1",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER1",
+    "RoleId": "ROLE_WORKER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:30:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_WORKER2",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "RoleId": "ROLE_WORKER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:35:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_WORKER3",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER3",
+    "RoleId": "ROLE_WORKER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:40:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_QA1",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_QA1",
+    "RoleId": "ROLE_QA_REVIEWER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-15T10:45:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_GOV1",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_GOV1",
+    "RoleId": "ROLE_COR",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:00:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_GOV2",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_GOV2",
+    "RoleId": "ROLE_GOV_APPROVER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:15:00Z"
+  },
+  {
+    "UserRoleId": "UR_APEX_GOV3",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_GOV3",
+    "RoleId": "ROLE_GOV_VIEWER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT001",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:30:00Z"
+  },
+  {
+    "UserRoleId": "UR_MERID_ADMIN",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_ADMIN",
+    "RoleId": "ROLE_MERID_ADMIN",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T08:45:00Z"
+  },
+  {
+    "UserRoleId": "UR_MERID_PM1",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_PM1",
+    "RoleId": "ROLE_MERID_PM",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:00:00Z"
+  },
+  {
+    "UserRoleId": "UR_MERID_WORKER1",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_WORKER1",
+    "RoleId": "ROLE_MERID_WORKER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:15:00Z"
+  },
+  {
+    "UserRoleId": "UR_MERID_WORKER2",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_WORKER2",
+    "RoleId": "ROLE_MERID_WORKER",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T09:30:00Z"
+  },
+  {
+    "UserRoleId": "UR_MERID_GOV1",
+    "TenantId": "TENANT002",
+    "UserId": "USER_MERID_GOV1",
+    "RoleId": "ROLE_MERID_GOV",
+    "ScopeType": "Tenant",
+    "ScopeId": "TENANT002",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T10:00:00Z"
+  }
+]

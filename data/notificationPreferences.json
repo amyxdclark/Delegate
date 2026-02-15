@@ -1,0 +1,32 @@
+[
+  {
+    "PreferenceId": "NP_001",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_PM1",
+    "Channel": "email",
+    "EventType": "TimeEntrySubmitted",
+    "IsEnabled": true,
+    "DigestMode": "immediate",
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "PreferenceId": "NP_002",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_PM1",
+    "Channel": "in_app",
+    "EventType": "TimeEntrySubmitted",
+    "IsEnabled": true,
+    "DigestMode": "immediate",
+    "UpdatedUtc": "2025-01-15T11:00:00Z"
+  },
+  {
+    "PreferenceId": "NP_003",
+    "TenantId": "TENANT001",
+    "UserId": "USER_APEX_WORKER2",
+    "Channel": "email",
+    "EventType": "TimeEntryConcurred",
+    "IsEnabled": true,
+    "DigestMode": "immediate",
+    "UpdatedUtc": "2025-01-15T11:30:00Z"
+  }
+]

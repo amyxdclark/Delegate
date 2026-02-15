@@ -1,0 +1,93 @@
+[
+  {
+    "RoleId": "ROLE_PLATFORM_ADMIN",
+    "TenantId": "PLATFORM",
+    "Name": "Platform Administrator",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_COMPANY_ADMIN",
+    "TenantId": "TENANT001",
+    "Name": "Company Administrator",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_PROJECT_MANAGER",
+    "TenantId": "TENANT001",
+    "Name": "Project Manager",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_TASK_LEAD",
+    "TenantId": "TENANT001",
+    "Name": "Task Lead",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_WORKER",
+    "TenantId": "TENANT001",
+    "Name": "Worker",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_QA_REVIEWER",
+    "TenantId": "TENANT001",
+    "Name": "QA Reviewer",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_GOV_VIEWER",
+    "TenantId": "TENANT001",
+    "Name": "Government Viewer",
+    "PartyType": "Government",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_GOV_APPROVER",
+    "TenantId": "TENANT001",
+    "Name": "Government Approver",
+    "PartyType": "Government",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_COR",
+    "TenantId": "TENANT001",
+    "Name": "Contracting Officer Representative",
+    "PartyType": "Government",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_MERID_ADMIN",
+    "TenantId": "TENANT002",
+    "Name": "Company Administrator",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_MERID_PM",
+    "TenantId": "TENANT002",
+    "Name": "Project Manager",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_MERID_WORKER",
+    "TenantId": "TENANT002",
+    "Name": "Worker",
+    "PartyType": "Contractor",
+    "IsActive": true
+  },
+  {
+    "RoleId": "ROLE_MERID_GOV",
+    "TenantId": "TENANT002",
+    "Name": "Government Viewer",
+    "PartyType": "Government",
+    "IsActive": true
+  }
+]

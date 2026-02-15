@@ -1,0 +1,38 @@
+[
+  {
+    "StakeholderId": "STAKE_001",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_001",
+    "UserId": "USER_APEX_GOV1",
+    "GovernmentRole": "COR",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:00:00Z"
+  },
+  {
+    "StakeholderId": "STAKE_002",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_001",
+    "UserId": "USER_APEX_GOV3",
+    "GovernmentRole": "GovViewer",
+    "IsActive": true,
+    "CreatedUtc": "2025-01-16T09:30:00Z"
+  },
+  {
+    "StakeholderId": "STAKE_003",
+    "TenantId": "TENANT001",
+    "ContractId": "CONTRACT_APEX_002",
+    "UserId": "USER_APEX_GOV2",
+    "GovernmentRole": "GovApprover",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-01T10:00:00Z"
+  },
+  {
+    "StakeholderId": "STAKE_004",
+    "TenantId": "TENANT002",
+    "ContractId": "CONTRACT_MERID_001",
+    "UserId": "USER_MERID_GOV1",
+    "GovernmentRole": "GovViewer",
+    "IsActive": true,
+    "CreatedUtc": "2025-02-15T10:00:00Z"
+  }
+]

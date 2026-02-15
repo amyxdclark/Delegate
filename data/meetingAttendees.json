@@ -1,0 +1,66 @@
+[
+  {
+    "AttendeeId": "ATT_001",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_001",
+    "UserId": "USER_APEX_PM1",
+    "Response": "Accepted",
+    "Role": "Organizer"
+  },
+  {
+    "AttendeeId": "ATT_002",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_001",
+    "UserId": "USER_APEX_LEAD1",
+    "Response": "Accepted",
+    "Role": "Required"
+  },
+  {
+    "AttendeeId": "ATT_003",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_001",
+    "UserId": "USER_APEX_GOV1",
+    "Response": "Accepted",
+    "Role": "Required"
+  },
+  {
+    "AttendeeId": "ATT_004",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_001",
+    "UserId": "USER_APEX_GOV3",
+    "Response": "Tentative",
+    "Role": "Optional"
+  },
+  {
+    "AttendeeId": "ATT_005",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_002",
+    "UserId": "USER_APEX_LEAD1",
+    "Response": "Accepted",
+    "Role": "Organizer"
+  },
+  {
+    "AttendeeId": "ATT_006",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_002",
+    "UserId": "USER_APEX_WORKER1",
+    "Response": "Accepted",
+    "Role": "Required"
+  },
+  {
+    "AttendeeId": "ATT_007",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_002",
+    "UserId": "USER_APEX_WORKER2",
+    "Response": "Accepted",
+    "Role": "Required"
+  },
+  {
+    "AttendeeId": "ATT_008",
+    "TenantId": "TENANT001",
+    "MeetingId": "MEET_002",
+    "UserId": "USER_APEX_WORKER3",
+    "Response": "Accepted",
+    "Role": "Required"
+  }
+]

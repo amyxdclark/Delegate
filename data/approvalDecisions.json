@@ -1,0 +1,11 @@
+[
+  {
+    "ApprovalDecisionId": "AD_001",
+    "TenantId": "TENANT001",
+    "ApprovalRequirementId": "AR_002",
+    "DecidedByUserId": "USER_APEX_GOV1",
+    "Decision": "Approved",
+    "CommentPostId": null,
+    "DecidedUtc": "2026-01-30T14:00:00Z"
+  }
+]
