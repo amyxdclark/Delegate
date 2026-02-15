@@ -1,5 +1,5 @@
-import { appShell, renderLoginScreen, renderDashboard } from "./ui.js";
-import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState } from "./state.js";
+import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar } from "./ui.js";
+import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession } from "./state.js";
 import { downloadJson, readJsonFile } from "./utils.js";
 
 let state = null;
@@ -22,9 +22,11 @@ async function boot(){
     
     if(!currentUser){
       // Show login screen
+      currentView = 'login';
       showLogin();
     } else {
       // Show main app
+      currentView = 'dashboard';
       showApp();
     }
   } catch(error){
@@ -73,16 +75,24 @@ function updateUserList(tenantId){
 }
 
 function showApp(){
-  currentView = 'dashboard';
+  // Ensure we have a valid view
+  if(!currentView || currentView === 'login'){
+    currentView = 'dashboard';
+  }
+  
   const root = el("app");
-  root.innerHTML = appShell(state, currentUser);
+  root.innerHTML = appShell(state, currentUser, currentView);
   
   // Set PWA badge
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
   el("pwaBadge").textContent = isStandalone ? "PWA" : "Web";
   
-  renderCurrentView();
+  // Wire up buttons and navigation first
   wireGlobalButtons();
+  wireNavigation();
+  
+  // Then render the current view
+  renderCurrentView();
 }
 
 function renderCurrentView(){
@@ -92,6 +102,25 @@ function renderCurrentView(){
   switch(currentView){
     case 'dashboard':
       contentArea.innerHTML = renderDashboard(state, currentUser);
+      break;
+    case 'contracts':
+      contentArea.innerHTML = renderContracts(state, currentUser);
+      break;
+    case 'tasks':
+      contentArea.innerHTML = renderTasks(state, currentUser);
+      break;
+    case 'timesheet':
+      contentArea.innerHTML = renderTimesheet(state, currentUser);
+      wireTimerButtons();
+      break;
+    case 'forum':
+      contentArea.innerHTML = renderForum(state, currentUser);
+      break;
+    case 'chat':
+      contentArea.innerHTML = renderChat(state, currentUser);
+      break;
+    case 'calendar':
+      contentArea.innerHTML = renderCalendar(state, currentUser);
       break;
     default:
       contentArea.innerHTML = '<div class="p-4">View not implemented yet</div>';
@@ -114,6 +143,104 @@ function wireGlobalButtons(){
   if(btnData){
     btnData.addEventListener("click", () => openDataTools());
   }
+}
+
+function wireNavigation(){
+  // Wire up navigation tabs
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const view = e.target.getAttribute('data-nav');
+      if(view){
+        currentView = view;
+        renderCurrentView();
+      }
+    });
+  });
+}
+
+function wireTimerButtons(){
+  const btnStart = el("btnStartTimer");
+  const btnPause = el("btnPauseTimer");
+  const btnStop = el("btnStopTimer");
+  
+  if(btnStart){
+    btnStart.addEventListener("click", () => {
+      // Start a new work session
+      state = startWorkSession(state, currentUser.userId, currentUser.tenantId, null);
+      persist();
+      renderCurrentView();
+      startTimerUpdate();
+    });
+  }
+  
+  if(btnPause){
+    btnPause.addEventListener("click", () => {
+      // Find active session and pause it
+      const activeSession = (state.workSessions || []).find(ws => 
+        ws.UserId === currentUser.userId && ws.State === 'Running'
+      );
+      if(activeSession){
+        state = pauseWorkSession(state, activeSession.WorkSessionId);
+        persist();
+        renderCurrentView();
+      }
+    });
+  }
+  
+  if(btnStop){
+    btnStop.addEventListener("click", () => {
+      // Find active session and stop it
+      const activeSession = (state.workSessions || []).find(ws => 
+        ws.UserId === currentUser.userId && ws.State === 'Running'
+      );
+      if(activeSession){
+        state = stopWorkSession(state, activeSession.WorkSessionId);
+        persist();
+        renderCurrentView();
+      }
+    });
+  }
+  
+  // Start timer update if there's an active session
+  const activeSession = (state.workSessions || []).find(ws => 
+    ws.UserId === currentUser.userId && ws.State === 'Running'
+  );
+  if(activeSession){
+    startTimerUpdate();
+  }
+}
+
+let timerInterval = null;
+
+function startTimerUpdate(){
+  // Clear any existing interval
+  if(timerInterval){
+    clearInterval(timerInterval);
+  }
+  
+  // Update timer every second
+  timerInterval = setInterval(() => {
+    const activeSession = (state.workSessions || []).find(ws => 
+      ws.UserId === currentUser.userId && ws.State === 'Running'
+    );
+    
+    if(!activeSession){
+      clearInterval(timerInterval);
+      return;
+    }
+    
+    const timerDisplay = el("timerDisplay");
+    if(timerDisplay){
+      const startTime = new Date(activeSession.StartUtc);
+      const now = new Date();
+      const elapsedMs = now - startTime;
+      const hours = Math.floor(elapsedMs / 3600000);
+      const minutes = Math.floor((elapsedMs % 3600000) / 60000);
+      const seconds = Math.floor((elapsedMs % 60000) / 1000);
+      
+      timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+  }, 1000);
 }
 
 function persist(){
