@@ -1,6 +1,6 @@
-import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar } from "./ui.js";
-import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession } from "./state.js";
-import { downloadJson, readJsonFile } from "./utils.js";
+import { appShell, renderLoginScreen, renderDashboard, renderContracts, renderTasks, renderTimesheet, renderForum, renderChat, renderCalendar, renderUserProfile, renderReports, renderAIAssistant, renderPTO, renderAuditLog } from "./ui.js";
+import { loadState, saveState, getCurrentUser, setCurrentUser, clearCurrentUser, resetToSeed, loadSeed, exportState, startWorkSession, stopWorkSession, pauseWorkSession, resumeWorkSession, markNotificationRead, isFeatureEnabled, getUserRoles, isAdmin, isProjectManager, isApprover, getTenantBranding, transitionTimeEntry, addToCollection } from "./state.js";
+import { downloadJson, readJsonFile, uid } from "./utils.js";
 
 let state = null;
 let currentUser = null;
@@ -108,19 +108,41 @@ function renderCurrentView(){
       break;
     case 'tasks':
       contentArea.innerHTML = renderTasks(state, currentUser);
+      wireTasks();
       break;
     case 'timesheet':
       contentArea.innerHTML = renderTimesheet(state, currentUser);
       wireTimerButtons();
+      wireTimesheetActions();
       break;
     case 'forum':
       contentArea.innerHTML = renderForum(state, currentUser);
+      wireForumActions();
       break;
     case 'chat':
       contentArea.innerHTML = renderChat(state, currentUser);
+      wireChatActions();
       break;
     case 'calendar':
       contentArea.innerHTML = renderCalendar(state, currentUser);
+      wireCalendarActions();
+      break;
+    case 'reports':
+      contentArea.innerHTML = renderReports(state, currentUser);
+      break;
+    case 'ai':
+      contentArea.innerHTML = renderAIAssistant(state, currentUser);
+      break;
+    case 'profile':
+      contentArea.innerHTML = renderUserProfile(state, currentUser);
+      wireProfileActions();
+      break;
+    case 'pto':
+      contentArea.innerHTML = renderPTO(state, currentUser);
+      wirePTOActions();
+      break;
+    case 'audit':
+      contentArea.innerHTML = renderAuditLog(state, currentUser);
       break;
     default:
       contentArea.innerHTML = '<div class="p-4">View not implemented yet</div>';
@@ -143,6 +165,21 @@ function wireGlobalButtons(){
   if(btnData){
     btnData.addEventListener("click", () => openDataTools());
   }
+  
+  // Notification button
+  const btnNotifications = el("btnNotifications");
+  if(btnNotifications){
+    btnNotifications.addEventListener("click", () => openNotificationsPanel());
+  }
+  
+  // User profile button
+  const btnUserProfile = el("btnUserProfile");
+  if(btnUserProfile){
+    btnUserProfile.addEventListener("click", () => {
+      currentView = 'profile';
+      renderCurrentView();
+    });
+  }
 }
 
 function wireNavigation(){
@@ -162,6 +199,7 @@ function wireTimerButtons(){
   const btnStart = el("btnStartTimer");
   const btnPause = el("btnPauseTimer");
   const btnStop = el("btnStopTimer");
+  const btnResume = el("btnResumeTimer");
   
   if(btnStart){
     btnStart.addEventListener("click", () => {
@@ -187,11 +225,26 @@ function wireTimerButtons(){
     });
   }
   
+  if(btnResume){
+    btnResume.addEventListener("click", () => {
+      // Find paused session and resume it
+      const pausedSession = (state.workSessions || []).find(ws => 
+        ws.UserId === currentUser.userId && ws.State === 'Paused'
+      );
+      if(pausedSession){
+        state = resumeWorkSession(state, pausedSession.WorkSessionId);
+        persist();
+        renderCurrentView();
+        startTimerUpdate();
+      }
+    });
+  }
+  
   if(btnStop){
     btnStop.addEventListener("click", () => {
-      // Find active session and stop it
+      // Find active or paused session and stop it
       const activeSession = (state.workSessions || []).find(ws => 
-        ws.UserId === currentUser.userId && ws.State === 'Running'
+        ws.UserId === currentUser.userId && (ws.State === 'Running' || ws.State === 'Paused')
       );
       if(activeSession){
         state = stopWorkSession(state, activeSession.WorkSessionId);
@@ -228,7 +281,7 @@ function startTimerUpdate(){
   }
   
   // Cache the start time for better performance
-  const startTime = new Date(activeSession.StartUtc).getTime();
+  const startTime = new Date(activeSession.StartedUtc).getTime();
   
   // Update timer every second
   timerInterval = setInterval(() => {
@@ -356,3 +409,335 @@ function escapeHtml(str){
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+// Notification panel
+function openNotificationsPanel(){
+  const notifications = (state.notifications || [])
+    .filter(n => n.UserId === currentUser.userId)
+    .sort((a, b) => new Date(b.CreatedUtc) - new Date(a.CreatedUtc));
+  
+  const body = `
+    <div class="space-y-2 max-h-96 overflow-y-auto">
+      ${notifications.length === 0 ? `
+        <div class="text-center py-8 text-slate-400">No notifications</div>
+      ` : notifications.map(n => `
+        <div class="p-3 rounded-xl ${n.IsRead ? 'bg-slate-900' : 'bg-slate-800'} border ${n.IsRead ? 'border-slate-800' : 'border-cyan-900'}">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="font-medium text-sm ${n.IsRead ? 'text-slate-300' : 'text-white'}">${escapeHtml(n.Title)}</div>
+              <div class="text-sm text-slate-400 mt-1">${escapeHtml(n.Body)}</div>
+              <div class="text-xs text-slate-500 mt-1">${new Date(n.CreatedUtc).toLocaleString()}</div>
+            </div>
+            ${!n.IsRead ? `
+              <button class="px-2 py-1 text-xs rounded-lg bg-slate-700 hover:bg-slate-600" data-mark-read="${n.NotificationId}">Mark Read</button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  const footer = `<button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Close</button>`;
+  setModal(modal("Notifications", body, footer));
+  
+  // Wire up mark read buttons
+  document.querySelectorAll('[data-mark-read]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const notifId = e.target.getAttribute('data-mark-read');
+      // Note: markNotificationRead mutates state in place
+      markNotificationRead(state, notifId);
+      persist();
+      setModal(""); // Close modal
+      showApp(); // Refresh to update badge count
+    });
+  });
+}
+
+// Create time entry modal
+function openCreateTimeEntryModal(){
+  // Get user's assigned tasks
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const assignedTasks = (state.taskNodes || []).filter(tn => 
+    assignedTaskIds.includes(tn.TaskNodeId)
+  );
+  
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Task</div>
+        <select id="teTaskSelect" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none">
+          <option value="">Select a task...</option>
+          ${assignedTasks.map(t => `<option value="${t.TaskNodeId}">${escapeHtml(t.Title)}</option>`).join('')}
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Work Date</div>
+        <input type="date" id="teWorkDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="${new Date().toISOString().slice(0,10)}" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Hours</div>
+        <input type="number" id="teHours" min="0" max="24" step="0.5" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" value="8" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Notes</div>
+        <textarea id="teNotes" rows="3" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-600 focus:outline-none" placeholder="What did you work on?"></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSaveTimeEntry" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Create Entry</button>
+  `;
+  setModal(modal("Create Time Entry", body, footer));
+  
+  // Wire save button
+  el("btnSaveTimeEntry").addEventListener("click", () => {
+    const taskId = el("teTaskSelect").value;
+    const workDate = el("teWorkDate").value;
+    const hours = parseFloat(el("teHours").value);
+    const notes = el("teNotes").value;
+    
+    if(!taskId || !workDate || !hours){
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    const timeEntry = {
+      TimeEntryId: uid('TE'),
+      TenantId: currentUser.tenantId,
+      UserId: currentUser.userId,
+      TaskNodeId: taskId,
+      WorkDate: workDate,
+      NetMinutes: hours * 60,
+      Hours: hours,
+      State: 'Draft',
+      Notes: notes,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    // Note: addToCollection mutates state in place
+    addToCollection(state.timeEntries, timeEntry);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+// Stub functions for wiring various views - placeholders for future implementation
+function wireTasks(){
+  // TODO: Wire up task editing, status transitions, hierarchy display
+}
+
+function wireTimesheetActions(){
+  // Wire create time entry button
+  const btnCreate = el("btnCreateTimeEntry");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreateTimeEntryModal());
+  }
+  
+  // Wire submit buttons
+  document.querySelectorAll('[data-submit-entry]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const entryId = e.target.getAttribute('data-submit-entry');
+      if(confirm('Submit this time entry for approval?')){
+        // Note: transitionTimeEntry mutates state in place
+        transitionTimeEntry(state, entryId, 'Pending', currentUser.userId);
+        persist();
+        renderCurrentView();
+      }
+    });
+  });
+}
+
+function wireForumActions(){
+  // TODO: Wire up forum thread/post creation, attachments, badges
+}
+
+function wireChatActions(){
+  // Wire send message button
+  const btnSend = el("btnSendChatMessage");
+  if(btnSend){
+    btnSend.addEventListener("click", () => sendChatMessage());
+  }
+  
+  // Wire enter key to send
+  const msgInput = el("chatMessageInput");
+  if(msgInput){
+    msgInput.addEventListener("keypress", (e) => {
+      if(e.key === 'Enter'){
+        sendChatMessage();
+      }
+    });
+  }
+  
+  // Wire thread switching
+  document.querySelectorAll('[data-chat-thread]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const threadId = e.currentTarget.getAttribute('data-chat-thread');
+      switchChatThread(threadId);
+    });
+  });
+}
+
+function sendChatMessage(){
+  const msgInput = el("chatMessageInput");
+  if(!msgInput) return;
+  
+  const body = msgInput.value.trim();
+  const threadId = msgInput.getAttribute('data-thread-id');
+  
+  if(!body || !threadId) return;
+  
+  const message = {
+    MessageId: uid('MSG'),
+    ThreadId: threadId,
+    TenantId: currentUser.tenantId,
+    SentBy: currentUser.userId,
+    Body: body,
+    SentUtc: new Date().toISOString()
+  };
+  
+  // Note: addToCollection mutates state in place
+  addToCollection(state.chatMessages, message);
+  
+  // Update thread's last message time
+  const thread = state.chatThreads.find(t => t.ThreadId === threadId);
+  if(thread){
+    thread.LastMessageUtc = message.SentUtc;
+  }
+  
+  persist();
+  
+  // Clear input and re-render to show new message
+  msgInput.value = '';
+  renderCurrentView();
+}
+
+function switchChatThread(threadId){
+  const thread = state.chatThreads.find(t => t.ThreadId === threadId);
+  if(!thread) return;
+  
+  // Re-render the whole view to show the selected thread
+  renderCurrentView();
+}
+
+function wireCalendarActions(){
+  // TODO: Wire up meeting creation, deadline reminders
+}
+
+function wireProfileActions(){
+  // TODO: Add skill editing, profile updates
+}
+
+function wirePTOActions(){
+  // Wire create PTO button
+  const btnCreate = el("btnCreatePTO");
+  if(btnCreate){
+    btnCreate.addEventListener("click", () => openCreatePTOModal());
+  }
+  
+  // Wire approve/deny buttons
+  document.querySelectorAll('[data-approve-pto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const ptoId = e.target.getAttribute('data-approve-pto');
+      approvePTO(ptoId);
+    });
+  });
+  
+  document.querySelectorAll('[data-deny-pto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const ptoId = e.target.getAttribute('data-deny-pto');
+      denyPTO(ptoId);
+    });
+  });
+}
+
+// PTO helpers
+function openCreatePTOModal(){
+  const body = `
+    <div class="space-y-4">
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Category</div>
+        <select id="ptoCategory" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700">
+          <option>Vacation</option>
+          <option>Sick</option>
+          <option>Training</option>
+          <option>Personal</option>
+        </select>
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Start Date</div>
+        <input type="date" id="ptoStartDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">End Date</div>
+        <input type="date" id="ptoEndDate" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Hours</div>
+        <input type="number" id="ptoHours" min="1" max="200" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700" value="8" />
+      </label>
+      
+      <label class="block">
+        <div class="text-sm text-slate-300 mb-2">Notes</div>
+        <textarea id="ptoNotes" rows="2" class="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700"></textarea>
+      </label>
+    </div>
+  `;
+  const footer = `
+    <button class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700" data-close="1">Cancel</button>
+    <button id="btnSavePTO" class="px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600">Submit Request</button>
+  `;
+  setModal(modal("Request PTO", body, footer));
+  
+  el("btnSavePTO").addEventListener("click", () => {
+    const ptoEntry = {
+      PtoEntryId: uid('PTO'),
+      TenantId: currentUser.tenantId,
+      UserId: currentUser.userId,
+      Type: 'Planned',
+      Category: el("ptoCategory").value,
+      StartUtc: el("ptoStartDate").value + 'T00:00:00Z',
+      EndUtc: el("ptoEndDate").value + 'T23:59:59Z',
+      Hours: parseInt(el("ptoHours").value),
+      Status: 'Submitted',
+      Notes: el("ptoNotes").value,
+      CreatedUtc: new Date().toISOString()
+    };
+    
+    // Note: addToCollection mutates state in place
+    addToCollection(state.ptoEntries, ptoEntry);
+    persist();
+    setModal("");
+    renderCurrentView();
+  });
+}
+
+function approvePTO(ptoId){
+  const pto = state.ptoEntries.find(p => p.PtoEntryId === ptoId);
+  if(pto){
+    pto.Status = 'Approved';
+    pto.ApprovedByUserId = currentUser.userId;
+    pto.ApprovedUtc = new Date().toISOString();
+    persist();
+    renderCurrentView();
+  }
+}
+
+function denyPTO(ptoId){
+  const pto = state.ptoEntries.find(p => p.PtoEntryId === ptoId);
+  if(pto){
+    pto.Status = 'Denied';
+    persist();
+    renderCurrentView();
+  }
+}
+

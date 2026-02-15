@@ -1,5 +1,5 @@
 import { clampText, fmtDate, fmtDateTime, fmtHours } from "./utils.js";
-import { filterByTenant, getUnreadNotifications } from "./state.js";
+import { filterByTenant, getUnreadNotifications, isFeatureEnabled, getTenantBranding } from "./state.js";
 
 export function renderLoginScreen(state){
   const tenants = state.tenants || [];
@@ -43,29 +43,39 @@ export function appShell(state, currentUser, currentView){
   const user = state.users.find(u => u.UserId === currentUser.userId);
   const tenant = state.tenants.find(t => t.TenantId === currentUser.tenantId);
   const unreadCount = getUnreadNotifications(state, currentUser.userId).length;
+  const branding = getTenantBranding(state, currentUser.tenantId);
+  
+  // Apply tenant branding colors
+  const primaryColor = branding?.PrimaryColor || '#0e7490'; // Default cyan
+  const headerStyle = branding ? `style="border-bottom-color: ${primaryColor}20;"` : '';
+  
+  // Check feature flags for navigation
+  const hasChat = isFeatureEnabled(state, currentUser.tenantId, 'FF_CHAT_INTEGRATION');
+  const hasCalendar = isFeatureEnabled(state, currentUser.tenantId, 'FF_CALENDAR_SYNC');
+  const hasReporting = isFeatureEnabled(state, currentUser.tenantId, 'FF_ADVANCED_REPORTING');
+  const hasAI = isFeatureEnabled(state, currentUser.tenantId, 'FF_AI_ASSISTANT');
   
   return `
     <div class="flex flex-col min-h-screen">
-      <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+      <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur" ${headerStyle}>
         <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
           <img src="./assets/icons/icon-192.png" alt="Delegate" class="w-10 h-10 rounded-xl shadow" />
           <div class="flex-1">
             <div class="text-lg font-semibold leading-tight">Delegate</div>
             <div class="text-xs text-slate-400 -mt-0.5">${escapeHtml(tenant?.Name || 'Platform')}</div>
+            ${branding ? `<div class="text-xs text-slate-500 -mt-0.5">${escapeHtml(branding.ThemeName)}</div>` : ''}
           </div>
           
           <div class="flex items-center gap-3">
-            ${unreadCount > 0 ? `
-              <button class="relative px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">
-                <span class="text-sm">🔔</span>
-                <span class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-600 rounded-full">${unreadCount}</span>
-              </button>
-            ` : ''}
+            <button id="btnNotifications" class="relative px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">
+              <span class="text-sm">🔔</span>
+              ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-600 rounded-full">${unreadCount}</span>` : ''}
+            </button>
             
-            <div class="text-sm">
+            <button id="btnUserProfile" class="text-sm text-left hover:bg-slate-800 px-3 py-2 rounded-xl">
               <div class="font-medium">${escapeHtml(user?.DisplayName || 'User')}</div>
               <div class="text-xs text-slate-400">${escapeHtml(user?.PartyType || '')}</div>
-            </div>
+            </button>
             
             <button id="btnData" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Data</button>
             <button id="btnLogout" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm">Logout</button>
@@ -81,8 +91,11 @@ export function appShell(state, currentUser, currentView){
             ${navTab('tasks', '✅ Tasks', currentView)}
             ${navTab('timesheet', '⏱️ Timesheet', currentView)}
             ${navTab('forum', '💬 Forum', currentView)}
-            ${navTab('chat', '💭 Chat', currentView)}
-            ${navTab('calendar', '📅 Calendar', currentView)}
+            ${hasChat ? navTab('chat', '💭 Chat', currentView) : ''}
+            ${hasCalendar ? navTab('calendar', '📅 Calendar', currentView) : ''}
+            ${hasReporting ? navTab('reports', '📊 Reports', currentView) : ''}
+            ${hasAI ? navTab('ai', '🤖 AI Assistant', currentView) : ''}
+            ${navTab('pto', '🏖️ PTO', currentView)}
           </div>
         </nav>
       </header>
@@ -381,12 +394,27 @@ export function renderTimesheet(state, currentUser){
   );
   
   const activeSession = workSessions.find(ws => ws.State === 'Running');
+  const pausedSession = workSessions.find(ws => ws.State === 'Paused');
+  
+  // Get user's assigned tasks for time entry creation
+  const userTaskAssignments = (state.taskAssignments || []).filter(ta => 
+    ta.UserId === currentUser.userId && ta.TenantId === currentUser.tenantId
+  );
+  const assignedTaskIds = userTaskAssignments.map(ta => ta.TaskNodeId);
+  const assignedTasks = (state.taskNodes || []).filter(tn => 
+    assignedTaskIds.includes(tn.TaskNodeId)
+  );
   
   return `
     <div class="mx-auto max-w-7xl px-4 py-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Timesheet</h1>
-        <p class="text-slate-400">Track your time and manage work sessions</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">Timesheet</h1>
+          <p class="text-slate-400">Track your time and manage work sessions</p>
+        </div>
+        <button id="btnCreateTimeEntry" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold">
+          + New Time Entry
+        </button>
       </div>
       
       <!-- Active Timer -->
@@ -396,11 +424,29 @@ export function renderTimesheet(state, currentUser){
             <div class="flex-1">
               <div class="text-sm text-slate-400 mb-1">Active Timer</div>
               <div class="text-2xl font-bold mb-1" id="timerDisplay">00:00:00</div>
-              <div class="text-sm text-slate-400">Started: ${fmtDateTime(activeSession.StartUtc)}</div>
+              <div class="text-sm text-slate-400">Started: ${fmtDateTime(activeSession.StartedUtc)}</div>
             </div>
             <div class="flex gap-2">
               <button id="btnPauseTimer" class="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-600 font-semibold">
                 ⏸️ Pause
+              </button>
+              <button id="btnStopTimer" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 font-semibold">
+                ⏹️ Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      ` : pausedSession ? `
+        <div class="mb-6 p-6 rounded-2xl border-2 border-amber-600 bg-amber-950/20">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <div class="text-sm text-slate-400 mb-1">Timer Paused</div>
+              <div class="text-lg font-semibold mb-1">Session paused</div>
+              <div class="text-sm text-slate-400">Started: ${fmtDateTime(pausedSession.StartedUtc)}</div>
+            </div>
+            <div class="flex gap-2">
+              <button id="btnResumeTimer" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 font-semibold">
+                ▶️ Resume
               </button>
               <button id="btnStopTimer" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 font-semibold">
                 ⏹️ Stop
@@ -436,6 +482,7 @@ export function renderTimesheet(state, currentUser){
                 <th class="px-4 py-3 text-left font-medium text-slate-400">Hours</th>
                 <th class="px-4 py-3 text-left font-medium text-slate-400">State</th>
                 <th class="px-4 py-3 text-left font-medium text-slate-400">Notes</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -445,19 +492,24 @@ export function renderTimesheet(state, currentUser){
                   <tr class="border-b border-slate-800/50 hover:bg-slate-900/30">
                     <td class="px-4 py-3">${fmtDate(te.WorkDate)}</td>
                     <td class="px-4 py-3">${escapeHtml(task?.Title || 'Unknown Task')}</td>
-                    <td class="px-4 py-3 font-semibold">${fmtHours(te.Hours)}</td>
+                    <td class="px-4 py-3 font-semibold">${fmtHours(te.NetMinutes)}</td>
                     <td class="px-4 py-3">
                       <span class="px-2 py-1 rounded-lg text-xs ${stateColor(te.State)}">
                         ${te.State}
                       </span>
                     </td>
                     <td class="px-4 py-3 text-slate-400">${escapeHtml(clampText(te.Notes || '', 50))}</td>
+                    <td class="px-4 py-3">
+                      ${te.State === 'Draft' ? `
+                        <button class="px-2 py-1 text-xs rounded-lg bg-cyan-700 hover:bg-cyan-600" data-submit-entry="${te.TimeEntryId}">Submit</button>
+                      ` : ''}
+                    </td>
                   </tr>
                 `;
               }).join('')}
               ${timeEntries.length === 0 ? `
                 <tr>
-                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">No time entries yet</td>
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400">No time entries yet</td>
                 </tr>
               ` : ''}
             </tbody>
@@ -563,17 +615,17 @@ export function renderChat(state, currentUser){
           </div>
           <div class="divide-y divide-slate-800/50 max-h-[600px] overflow-y-auto">
             ${chatThreads.map((thread, idx) => `
-              <div class="p-4 hover:bg-slate-900/40 cursor-pointer ${idx === 0 ? 'bg-slate-900/40' : ''}">
+              <button class="w-full text-left p-4 hover:bg-slate-900/40 ${idx === 0 ? 'bg-slate-900/40' : ''}" data-chat-thread="${thread.ThreadId}" aria-label="Select conversation: ${escapeHtml(thread.Title)}">
                 <div class="font-medium text-sm mb-1">${escapeHtml(thread.Title)}</div>
                 <div class="text-xs text-slate-400">${fmtDateTime(thread.LastMessageUtc)}</div>
-              </div>
+              </button>
             `).join('')}
             ${chatThreads.length === 0 ? '<div class="p-4 text-sm text-slate-400 text-center">No conversations</div>' : ''}
           </div>
         </div>
         
         <!-- Chat messages -->
-        <div class="lg:col-span-2 border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
+        <div id="chatMessagesContainer" class="lg:col-span-2 border border-slate-800 rounded-2xl bg-slate-900/20 overflow-hidden">
           ${chatThreads.length > 0 ? renderChatMessages(state, chatThreads[0]) : `
             <div class="p-8 text-center text-slate-400">
               Select a conversation to view messages
@@ -589,13 +641,21 @@ function renderChatMessages(state, thread){
   const messages = (state.chatMessages || []).filter(m => m.ThreadId === thread.ThreadId)
     .sort((a, b) => new Date(a.SentUtc) - new Date(b.SentUtc));
   
+  // Get participants
+  const participants = (state.chatParticipants || []).filter(p => p.ThreadId === thread.ThreadId);
+  const participantUsers = participants.map(p => {
+    const user = (state.users || []).find(u => u.UserId === p.UserId);
+    return user ? user.DisplayName : 'Unknown';
+  }).join(', ');
+  
   return `
     <div class="flex flex-col h-[600px]">
       <div class="p-4 border-b border-slate-800">
         <div class="font-semibold">${escapeHtml(thread.Title)}</div>
+        ${participantUsers ? `<div class="text-xs text-slate-400 mt-1">Participants: ${escapeHtml(participantUsers)}</div>` : ''}
       </div>
       
-      <div class="flex-1 p-4 space-y-3 overflow-y-auto">
+      <div id="chatMessagesList" class="flex-1 p-4 space-y-3 overflow-y-auto">
         ${messages.map(msg => {
           const author = state.users?.find(u => u.UserId === msg.SentBy);
           return `
@@ -618,8 +678,8 @@ function renderChatMessages(state, thread){
       
       <div class="p-4 border-t border-slate-800">
         <div class="flex gap-2">
-          <input type="text" placeholder="Type a message..." class="flex-1 px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-600 focus:outline-none text-sm" />
-          <button class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold text-sm">Send</button>
+          <input type="text" id="chatMessageInput" data-thread-id="${thread.ThreadId}" placeholder="Type a message..." class="flex-1 px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-600 focus:outline-none text-sm" />
+          <button id="btnSendChatMessage" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold text-sm">Send</button>
         </div>
       </div>
     </div>
@@ -708,4 +768,414 @@ export function escapeHtml(str){
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+// User Profile Page
+export function renderUserProfile(state, currentUser){
+  const user = state.users.find(u => u.UserId === currentUser.userId);
+  if(!user) return '<div class="p-4">User not found</div>';
+  
+  // Get user roles
+  const userRoles = (state.userRoles || []).filter(ur => 
+    ur.UserId === currentUser.userId && ur.TenantId === currentUser.tenantId && ur.IsActive
+  );
+  const roles = userRoles.map(ur => {
+    const role = (state.roles || []).find(r => r.RoleId === ur.RoleId);
+    return role?.Name || ur.RoleId;
+  });
+  
+  // Get user skills
+  const userSkills = (state.userSkills || []).filter(us => 
+    us.UserId === currentUser.userId && us.TenantId === currentUser.tenantId
+  );
+  const skills = userSkills.map(us => {
+    const skill = (state.skills || []).find(s => s.SkillId === us.SkillId);
+    return { skill, proficiency: us.ProficiencyLevel };
+  });
+  
+  // Get recent time entries
+  const recentTimeEntries = (state.timeEntries || [])
+    .filter(te => te.UserId === currentUser.userId)
+    .sort((a, b) => new Date(b.WorkDate) - new Date(a.WorkDate))
+    .slice(0, 5);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-5xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">User Profile</h1>
+      </div>
+      
+      <!-- User Info Card -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-slate-400">Display Name</div>
+            <div class="text-lg font-semibold">${escapeHtml(user.DisplayName)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Email</div>
+            <div>${escapeHtml(user.Email)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Party Type</div>
+            <div>${escapeHtml(user.PartyType)}</div>
+          </div>
+          <div>
+            <div class="text-sm text-slate-400">Timezone</div>
+            <div>${escapeHtml(user.TimezoneIANA || 'Not set')}</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Roles -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Roles</h2>
+        <div class="flex flex-wrap gap-2">
+          ${roles.length === 0 ? '<div class="text-slate-400">No roles assigned</div>' : ''}
+          ${roles.map(r => `
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-sm">${escapeHtml(r)}</span>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Skills -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Skills</h2>
+        ${skills.length === 0 ? '<div class="text-slate-400">No skills recorded</div>' : ''}
+        <div class="space-y-3">
+          ${skills.map(s => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div>
+                <div class="font-medium">${escapeHtml(s.skill?.Name || 'Unknown Skill')}</div>
+                <div class="text-sm text-slate-400">${escapeHtml(s.skill?.Category || '')}</div>
+              </div>
+              <div class="px-3 py-1 rounded-lg ${
+                s.proficiency === 'Expert' ? 'bg-emerald-900 text-emerald-300' :
+                s.proficiency === 'Advanced' ? 'bg-cyan-900 text-cyan-300' :
+                s.proficiency === 'Intermediate' ? 'bg-blue-900 text-blue-300' :
+                'bg-slate-700 text-slate-300'
+              } text-xs font-semibold">${escapeHtml(s.proficiency)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Recent Time Entries -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Recent Time Entries</h2>
+        ${recentTimeEntries.length === 0 ? '<div class="text-slate-400">No time entries</div>' : ''}
+        <div class="space-y-2">
+          ${recentTimeEntries.map(te => {
+            const task = (state.taskNodes || []).find(t => t.TaskNodeId === te.TaskNodeId);
+            return `
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+                <div class="flex-1">
+                  <div class="font-medium text-sm">${escapeHtml(task?.Title || 'Unknown Task')}</div>
+                  <div class="text-xs text-slate-400">${fmtDate(te.WorkDate)}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="text-sm">${fmtHours(te.NetMinutes)}</div>
+                  <span class="px-2 py-1 rounded-lg text-xs ${
+                    te.State === 'Concurred' ? 'bg-emerald-900 text-emerald-300' :
+                    te.State === 'Pending' ? 'bg-amber-900 text-amber-300' :
+                    te.State === 'Draft' ? 'bg-slate-700 text-slate-300' :
+                    'bg-slate-700 text-slate-300'
+                  }">${escapeHtml(te.State)}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Reports Page (Advanced Reporting feature)
+export function renderReports(state, currentUser){
+  const tenantContracts = (state.contracts || []).filter(c => c.TenantId === currentUser.tenantId);
+  const tenantTasks = (state.taskNodes || []).filter(t => t.TenantId === currentUser.tenantId);
+  const tenantTimeEntries = (state.timeEntries || []).filter(te => te.TenantId === currentUser.tenantId);
+  
+  // Calculate hours by task
+  const taskHours = {};
+  tenantTimeEntries.forEach(te => {
+    if(!taskHours[te.TaskNodeId]) taskHours[te.TaskNodeId] = 0;
+    taskHours[te.TaskNodeId] += (te.NetMinutes || 0) / 60;
+  });
+  
+  const topTasks = Object.entries(taskHours)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([taskId, hours]) => {
+      const task = tenantTasks.find(t => t.TaskNodeId === taskId);
+      return { task, hours };
+    });
+  
+  // Calculate total hours
+  const totalHours = Object.values(taskHours).reduce((sum, h) => sum + h, 0);
+  
+  // Calculate hours by user
+  const userHours = {};
+  tenantTimeEntries.forEach(te => {
+    if(!userHours[te.UserId]) userHours[te.UserId] = 0;
+    userHours[te.UserId] += (te.NetMinutes || 0) / 60;
+  });
+  
+  const topUsers = Object.entries(userHours)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([userId, hours]) => {
+      const user = (state.users || []).find(u => u.UserId === userId);
+      return { user, hours };
+    });
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">📊 Advanced Reports</h1>
+      </div>
+      
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Contracts</div>
+          <div class="text-2xl font-bold">${tenantContracts.length}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Tasks</div>
+          <div class="text-2xl font-bold">${tenantTasks.length}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Total Hours</div>
+          <div class="text-2xl font-bold">${totalHours.toFixed(1)}</div>
+        </div>
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-4">
+          <div class="text-sm text-slate-400">Time Entries</div>
+          <div class="text-2xl font-bold">${tenantTimeEntries.length}</div>
+        </div>
+      </div>
+      
+      <!-- Top Tasks by Hours -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Top Tasks by Hours</h2>
+        <div class="space-y-2">
+          ${topTasks.map(t => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium text-sm">${escapeHtml(t.task?.Title || 'Unknown Task')}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(t.task?.TaskNodeId || '')}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold">${t.hours.toFixed(1)} hrs</div>
+                <div class="text-xs text-slate-400">${((t.hours / totalHours) * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Top Users by Hours -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Team Utilization</h2>
+        <div class="space-y-2">
+          ${topUsers.map(u => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium text-sm">${escapeHtml(u.user?.DisplayName || 'Unknown User')}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(u.user?.PartyType || '')}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold">${u.hours.toFixed(1)} hrs</div>
+                <div class="text-xs text-slate-400">${((u.hours / totalHours) * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// AI Assistant Page
+export function renderAIAssistant(state, currentUser){
+  const aiPolicy = state.aiPolicy?.[0];
+  const conversations = (state.aiConversations || []).filter(c => c.UserId === currentUser.userId);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-4xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">🤖 AI Assistant</h1>
+      </div>
+      
+      <!-- AI Policy Notice -->
+      ${aiPolicy ? `
+        <div class="border border-cyan-800 rounded-2xl bg-cyan-950/30 p-6">
+          <h2 class="text-lg font-semibold mb-2">AI Usage Policy</h2>
+          <div class="text-sm text-slate-300 space-y-2">
+            <div><strong>Allowed:</strong> ${escapeHtml(aiPolicy.AllowedUseCases || 'Not specified')}</div>
+            <div><strong>Prohibited:</strong> ${escapeHtml(aiPolicy.ProhibitedUseCases || 'Not specified')}</div>
+            <div><strong>Data Retention:</strong> ${escapeHtml(aiPolicy.DataRetentionPolicy || 'Not specified')}</div>
+            ${aiPolicy.RequiresApproval ? '<div class="text-amber-400">⚠️ AI usage requires approval</div>' : ''}
+          </div>
+        </div>
+      ` : ''}
+      
+      <!-- Placeholder Interface -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">AI Chat Interface</h2>
+        <div class="space-y-4">
+          <div class="h-64 border border-slate-700 rounded-xl bg-slate-950 p-4 overflow-y-auto">
+            <div class="text-center text-slate-500 py-8">
+              AI Assistant conversation interface<br/>
+              <span class="text-sm">Coming soon</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" placeholder="Ask the AI assistant..." class="flex-1 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:border-cyan-600 focus:outline-none" disabled />
+            <button class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold" disabled>Send</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Conversation History -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">Conversation History</h2>
+        ${conversations.length === 0 ? `
+          <div class="text-center text-slate-400 py-8">No conversations yet</div>
+        ` : `
+          <div class="space-y-2">
+            ${conversations.map(c => `
+              <div class="p-3 rounded-xl bg-slate-800">
+                <div class="font-medium text-sm">${escapeHtml(c.Title || 'Untitled Conversation')}</div>
+                <div class="text-xs text-slate-400">${fmtDateTime(c.CreatedUtc)}</div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+// PTO / Leave Management
+export function renderPTO(state, currentUser){
+  const ptoEntries = (state.ptoEntries || []).filter(p => 
+    p.TenantId === currentUser.tenantId
+  ).sort((a, b) => new Date(b.CreatedUtc) - new Date(a.CreatedUtc));
+  
+  const myEntries = ptoEntries.filter(p => p.UserId === currentUser.userId);
+  const pendingApprovals = ptoEntries.filter(p => p.Status === 'Submitted');
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">PTO / Leave Management</h1>
+        <button id="btnCreatePTO" class="px-4 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-semibold">
+          + Request PTO
+        </button>
+      </div>
+      
+      <!-- My PTO Requests -->
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+        <h2 class="text-xl font-semibold mb-4">My PTO Requests</h2>
+        ${myEntries.length === 0 ? '<div class="text-slate-400">No PTO requests</div>' : ''}
+        <div class="space-y-2">
+          ${myEntries.map(p => `
+            <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800">
+              <div class="flex-1">
+                <div class="font-medium">${escapeHtml(p.Category)} - ${escapeHtml(p.Type)}</div>
+                <div class="text-sm text-slate-400">${fmtDate(p.StartUtc)} to ${fmtDate(p.EndUtc)} (${p.Hours}h)</div>
+                ${p.Notes ? `<div class="text-sm text-slate-400 mt-1">${escapeHtml(p.Notes)}</div>` : ''}
+              </div>
+              <span class="px-3 py-1 rounded-lg text-sm ${
+                p.Status === 'Approved' ? 'bg-emerald-900 text-emerald-300' :
+                p.Status === 'Submitted' ? 'bg-amber-900 text-amber-300' :
+                'bg-slate-700 text-slate-300'
+              }">${escapeHtml(p.Status)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Pending Approvals (for approvers) -->
+      ${pendingApprovals.length > 0 ? `
+        <div class="border border-slate-800 rounded-2xl bg-slate-900/50 p-6">
+          <h2 class="text-xl font-semibold mb-4">Pending Approvals</h2>
+          <div class="space-y-2">
+            ${pendingApprovals.map(p => {
+              const user = (state.users || []).find(u => u.UserId === p.UserId);
+              return `
+                <div class="flex items-center justify-between p-4 rounded-xl bg-slate-800">
+                  <div class="flex-1">
+                    <div class="font-medium">${escapeHtml(user?.DisplayName || 'Unknown User')}</div>
+                    <div class="text-sm text-slate-400">${escapeHtml(p.Category)} - ${fmtDate(p.StartUtc)} to ${fmtDate(p.EndUtc)} (${p.Hours}h)</div>
+                    ${p.Notes ? `<div class="text-sm text-slate-400 mt-1">${escapeHtml(p.Notes)}</div>` : ''}
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="px-3 py-1 text-sm rounded-lg bg-emerald-700 hover:bg-emerald-600" data-approve-pto="${p.PtoEntryId}">Approve</button>
+                    <button class="px-3 py-1 text-sm rounded-lg bg-rose-700 hover:bg-rose-600" data-deny-pto="${p.PtoEntryId}">Deny</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Audit Log Viewer
+export function renderAuditLog(state, currentUser){
+  const auditLogs = (state.auditLogs || [])
+    .filter(log => log.TenantId === currentUser.tenantId)
+    .sort((a, b) => new Date(b.TimestampUtc) - new Date(a.TimestampUtc))
+    .slice(0, 100);
+  
+  return `
+    <div class="p-4 space-y-6 mx-auto max-w-7xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Audit Log</h1>
+        <div class="text-sm text-slate-400">Last 100 entries</div>
+      </div>
+      
+      <div class="border border-slate-800 rounded-2xl bg-slate-900/50 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-900/40 border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Timestamp</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">User</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Action</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Entity</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-400">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${auditLogs.map(log => {
+                const user = (state.users || []).find(u => u.UserId === log.UserId);
+                return `
+                  <tr class="border-b border-slate-800/50 hover:bg-slate-900/30">
+                    <td class="px-4 py-3 text-xs">${fmtDateTime(log.TimestampUtc)}</td>
+                    <td class="px-4 py-3">${escapeHtml(user?.DisplayName || 'Unknown')}</td>
+                    <td class="px-4 py-3">
+                      <span class="px-2 py-1 rounded-lg text-xs bg-slate-700">${escapeHtml(log.Action)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-400">${escapeHtml(log.EntityType)}</td>
+                    <td class="px-4 py-3 text-slate-400 text-xs">${escapeHtml(clampText(log.Details || '', 60))}</td>
+                  </tr>
+                `;
+              }).join('')}
+              ${auditLogs.length === 0 ? `
+                <tr>
+                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">No audit logs</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
