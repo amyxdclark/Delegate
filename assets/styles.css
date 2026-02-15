@@ -1,0 +1,4 @@
+
+/* Optional: any custom styles beyond Tailwind */
+.dragging { opacity: 0.6; }
+.drop-target { outline: 2px dashed rgba(148, 163, 184, 0.6); outline-offset: -6px; }
