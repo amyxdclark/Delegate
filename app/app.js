@@ -213,33 +213,50 @@ function wireTimerButtons(){
 let timerInterval = null;
 
 function startTimerUpdate(){
-  // Clear any existing interval
+  // Clear any existing interval to prevent multiple timers
   if(timerInterval){
     clearInterval(timerInterval);
+    timerInterval = null;
   }
+  
+  const activeSession = (state.workSessions || []).find(ws => 
+    ws.UserId === currentUser.userId && ws.State === 'Running'
+  );
+  
+  if(!activeSession){
+    return;
+  }
+  
+  // Cache the start time for better performance
+  const startTime = new Date(activeSession.StartUtc).getTime();
   
   // Update timer every second
   timerInterval = setInterval(() => {
-    const activeSession = (state.workSessions || []).find(ws => 
-      ws.UserId === currentUser.userId && ws.State === 'Running'
-    );
-    
-    if(!activeSession){
+    const timerDisplay = el("timerDisplay");
+    if(!timerDisplay){
       clearInterval(timerInterval);
+      timerInterval = null;
       return;
     }
     
-    const timerDisplay = el("timerDisplay");
-    if(timerDisplay){
-      const startTime = new Date(activeSession.StartUtc);
-      const now = new Date();
-      const elapsedMs = now - startTime;
-      const hours = Math.floor(elapsedMs / 3600000);
-      const minutes = Math.floor((elapsedMs % 3600000) / 60000);
-      const seconds = Math.floor((elapsedMs % 60000) / 1000);
-      
-      timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    // Check if session is still active
+    const currentSession = (state.workSessions || []).find(ws => 
+      ws.UserId === currentUser.userId && ws.State === 'Running'
+    );
+    
+    if(!currentSession){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      return;
     }
+    
+    const now = Date.now();
+    const elapsedMs = now - startTime;
+    const hours = Math.floor(elapsedMs / 3600000);
+    const minutes = Math.floor((elapsedMs % 3600000) / 60000);
+    const seconds = Math.floor((elapsedMs % 60000) / 1000);
+    
+    timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }, 1000);
 }
 

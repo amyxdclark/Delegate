@@ -81,7 +81,7 @@ export function appShell(state, currentUser, currentView){
             ${navTab('tasks', '✅ Tasks', currentView)}
             ${navTab('timesheet', '⏱️ Timesheet', currentView)}
             ${navTab('forum', '💬 Forum', currentView)}
-            ${navTab('chat', '💬 Chat', currentView)}
+            ${navTab('chat', '💭 Chat', currentView)}
             ${navTab('calendar', '📅 Calendar', currentView)}
           </div>
         </nav>
